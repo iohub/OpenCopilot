@@ -27,6 +27,7 @@ import { UserHistory } from './UserHistory'
 import { createWebviewTelemetryService } from './utils/telemetry'
 import type { VSCodeWrapper } from './utils/VSCodeApi'
 import { ModelSettings } from './ModelSettings'
+import { PromptEditor } from './Components/PromptEditor'
 
 export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vscodeAPI }) => {
 
@@ -82,6 +83,8 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
     const [enhancedContextStatus, setEnhancedContextStatus] = useState<EnhancedContextContextT>({
         groups: [],
     })
+    const [showPromptEditor, setShowPromptEditor] = useState(false)
+
     const onConsentToEmbeddings = useCallback((): void => {
         vscodeAPI.postMessage({ command: 'embeddings/index' })
     }, [vscodeAPI])
@@ -320,10 +323,16 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                                         enableNewChatUI={config.experimentalChatPanel || false}
                                         clineState={clineState}
                                         setChatModels={setChatModels}
+                                        setShowPromptEditor={setShowPromptEditor}
                                     />
                                 </EnhancedContextEnabled.Provider>
                             </EnhancedContextContext.Provider>
                         </EnhancedContextEventHandlers.Provider>
+                    )}
+                    {showPromptEditor && (
+                        <PromptEditor 
+                            onClose={() => setShowPromptEditor(false)}
+                        />
                     )}
                 </>
             )}

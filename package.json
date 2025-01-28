@@ -1,7 +1,7 @@
 {
 	"name": "ocopilot",
-	"displayName": "Aline - CLINE, Chatbot, DeepSeek and more",
-	"description": "Forked version of Cline, introducing flexible and user-friendly features, such as: Customize Your Chatbot, Translator, and more. Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser",
+	"displayName": "Open Copilot – Intelligent Assistant tailored for deepseek",
+	"description": "Customizable Copilot with DeepSeek/Ollama, such as: Customize Your Chatbot, Coding Assistant, Translator and more.",
 	"version": "3.1.17",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
@@ -12,13 +12,13 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Dream Light"
+		"name": "rickyang"
 	},
 	"license": "Apache-2.0",
-	"publisher": "DreamLight",
+	"publisher": "rickyang",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/debug-dream/ocopilot.git"
+		"url": "https://github.com/iohub/OpenCopilot.git"
 	},
 	"homepage": "",
 	"categories": [
@@ -30,15 +30,11 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
-		"claude",
-		"dev",
-		"mcp",
-		"openrouter",
 		"coding",
 		"agent",
-		"autonomous",
 		"chatgpt",
+		"ollama",
+		"llamacpp",
 		"deepseek",
 		"ai",
 		"llama"

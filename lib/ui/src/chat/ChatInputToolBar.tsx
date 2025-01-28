@@ -103,7 +103,8 @@ function systemPromptsToCategories(extensionState?: ExtensionState): CategoryLis
 export const ChatInputToolBar: React.FC<{
   onChatSubmit?: (text: string) => void
   extensionState?: ExtensionState
-}> = ({ onChatSubmit, extensionState }) => {
+  setShowPromptEditor?: (show: boolean) => void
+}> = ({ onChatSubmit, extensionState, setShowPromptEditor }) => {
   const [inputValue, setInputValue] = useState('');
   const modelCategory = modelOptionsToCategories(extensionState);
   const promptCategory = systemPromptsToCategories(extensionState);
@@ -142,10 +143,9 @@ export const ChatInputToolBar: React.FC<{
 
   const handleEditPrompt = () => {
     setIsPromptDropdownOpen(false);
-    getVSCodeAPI().postMessage({
-      type: "openFile",
-      text: "{SystemPromptFile}"
-    })
+    if (setShowPromptEditor) {
+      setShowPromptEditor(true);
+    }
   };
 
   const handleEditModel = () => {
