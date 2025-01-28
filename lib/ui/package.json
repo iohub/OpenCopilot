@@ -1,0 +1,37 @@
+{
+  "name": "@sourcegraph/cody-ui",
+  "version": "0.0.7",
+  "description": "Cody UI shared library",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iohub/collama",
+    "directory": "lib/ui"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "!**/*.test.*",
+    "!**/*.story.*",
+    "!dist/**/*.ts?(x)",
+    "dist/**/*.d.ts"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc --build && cp -R src/* dist/",
+    "lint": "pnpm run lint:js",
+    "lint:js": "eslint --cache '**/*.[tj]s?(x)'",
+    "test": "vitest",
+    "storybook": "storybook dev -p 6006 --no-open --no-version-updates --no-release-notes",
+    "prepublishOnly": "tsc --build --clean && pnpm run build"
+  },
+  "dependencies": {
+    "@mdi/js": "^7.2.96",
+    "@sourcegraph/cody-shared": "file:../shared",
+    "styled-components": "^6.1.13",
+    "react-textarea-autosize": "^8.5.3",
+    "classnames": "^2.3.2"
+  }
+}

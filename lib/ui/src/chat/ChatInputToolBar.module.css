@@ -1,0 +1,115 @@
+.container {
+    width: 100%;
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-widget-border));
+    border-radius: 6px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.input {
+    width: calc(100% - 22px);
+    min-height: 48px;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--vscode-input-foreground);
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    overflow-y: hidden;
+    padding-bottom: 20px;
+}
+
+.input::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+    opacity: 0.75;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px;
+    border-top: 1px solid var(--vscode-input-border, var(--vscode-widget-border));
+}
+
+.toolbarLeft {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.contextButton,
+.dropdownButton {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    color: var(--vscode-foreground);
+    opacity: 0.8;
+    cursor: pointer;
+    font-size: var(--vscode-font-size);
+    user-select: none;
+}
+
+.contextButton:hover,
+.dropdownButton:hover {
+    background: var(--vscode-toolbar-hoverBackground);
+}
+
+.submitButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.submitButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--vscode-button-background);
+}
+
+.playIcon {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+}
+
+.inputContainer {
+    position: relative;
+    width: 100%;
+}
+
+.inputHint {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 12px;
+    color: var(--vscode-input-placeholderForeground);
+    opacity: 0.8;
+    pointer-events: none;
+    user-select: none;
+}
+  

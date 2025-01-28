@@ -1,0 +1,201 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--vscode-editor-background);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--vscode-widget-border);
+}
+
+.header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--vscode-foreground);
+}
+
+.form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.labelWrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.labelText {
+    font-size: 13px;
+    color: var(--vscode-foreground);
+    opacity: 0.9;
+}
+
+.hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+}
+
+.hint a {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+}
+
+.hint a:hover {
+    text-decoration: underline;
+}
+
+/* Common styles for form controls */
+:global(vscode-dropdown),
+:global(vscode-text-field) {
+    --dropdown-background: var(--vscode-dropdown-background);
+    --dropdown-border: var(--vscode-dropdown-border);
+    --dropdown-foreground: var(--vscode-dropdown-foreground);
+    width: 100%;
+    display: block;
+}
+
+/* Dropdown control styles */
+:global(vscode-dropdown)::part(control),
+:global(vscode-text-field)::part(control) {
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 3px;
+    padding: 4px 8px;
+    height: 28px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Dropdown listbox styles */
+:global(vscode-dropdown)::part(listbox) {
+    background: var(--vscode-dropdown-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 3px;
+    padding: 4px;
+    max-height: 300px;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Option content styles */
+.optionContent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+:global(vscode-option) {
+    padding: 0;
+    margin: 2px 0;
+    cursor: pointer;
+}
+
+:global(vscode-option:hover) .optionContent {
+    background: var(--vscode-list-hoverBackground);
+}
+
+:global(vscode-option[selected]) .optionContent {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+.optionContent i {
+    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+/* Selected item styles */
+:global(vscode-dropdown[open]) :global(vscode-option[selected]) .optionContent {
+    background: var(--vscode-list-activeSelectionBackground);
+}
+
+/* Scrollbar styles */
+:global(vscode-dropdown)::part(listbox)::-webkit-scrollbar {
+    width: 10px;
+}
+
+:global(vscode-dropdown)::part(listbox)::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+:global(vscode-dropdown)::part(listbox)::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-background);
+    border-radius: 5px;
+}
+
+:global(vscode-dropdown)::part(listbox)::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
+}
+
+/* Footer styles */
+.footer {
+    margin-top: 24px;
+    width: 100%;
+}
+
+/* Connect button styles */
+.connectButton {
+    width: 100%;
+    height: 32px;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 3px;
+    opacity: 0.9;
+    box-sizing: border-box;
+}
+
+.connectButton:hover {
+    background: var(--vscode-button-hoverBackground);
+    opacity: 1;
+}
+
+/* Dark theme adjustments */
+:global(.vscode-dark) .container {
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-widget-border);
+} 

@@ -1,0 +1,125 @@
+.dropdown {
+    position: relative;
+}
+
+.dropdownButton {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    color: var(--vscode-foreground);
+    opacity: 0.8;
+    cursor: pointer;
+    font-size: var(--vscode-font-size);
+    user-select: none;
+    min-height: 24px;
+}
+
+.dropdownButton:hover {
+    background: var(--vscode-toolbar-hoverBackground);
+}
+
+.dropdownArrow {
+    font-size: 10px;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    min-width: 280px;
+    background-color: var(--vscode-dropdown-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    padding: 6px 0;
+}
+
+.menuLeft {
+    left: 0;
+    transform: none;
+}
+
+.menuCenter {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.category {
+    padding: 0;
+}
+
+.categoryHeader {
+    padding: 6px 12px;
+    color: var(--vscode-descriptionForeground);
+    font-size: 11px;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    text-align: left;
+    font-size: var(--vscode-font-size);
+    min-height: 28px;
+}
+
+.option:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.optionTitle {
+    flex-grow: 1;
+    font-size: 13px;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background-color: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    margin-left: 8px;
+    opacity: 0.8;
+    font-weight: normal;
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--vscode-dropdown-border);
+    margin: 6px 0;
+    opacity: 0.5;
+}
+
+.editOption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.editOption:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.editOption .codicon {
+    margin-right: 4px;
+} 

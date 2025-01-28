@@ -1,0 +1,64 @@
+
+[
+  {
+    "id": "openrouter",
+    "name": "OpenRouter",
+    "visible": true,
+    "order": 1
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek V3",
+    "visible": true,
+    "order": 2
+  },
+  {
+    "id": "anthropic", 
+    "name": "Anthropic",
+    "visible": false,
+    "order": 102
+  },
+  {
+    "id": "openai",
+    "name": "OpenAI Compatible",
+    "visible": true,
+    "order": 103
+  },
+  {
+    "id": "openai-native",
+    "name": "OpenAI",
+    "visible": false,
+    "order": 104
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "visible": true,
+    "order": 105
+  },
+  {
+    "id": "bedrock",
+    "name": "AWS Bedrock",
+    "visible": false,
+    "order": 106
+  },
+  {
+    "id": "vertex",
+    "name": "Vertex AI",
+    "visible": false,
+    "order": 107
+  },
+  {
+    "id": "lmstudio",
+    "name": "LM Studio",
+    "visible": false,
+    "order": 108
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "visible": false,
+    "order": 109
+  }
+]
+

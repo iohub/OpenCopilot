@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "es2022",
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["ESNext", "DOM.Iterable"],
+  },
+  "composite": true,
+  "declarations": true,
+  "declarationMap": true,
+  "include": ["src", "src/chat/prompts/cody.json"],
+  "exclude": ["dist"],
+}

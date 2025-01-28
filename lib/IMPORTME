@@ -1,0 +1,8 @@
+// import { ChatMessage } from '@sourcegraph/cody-shared/src/chat/transcript/messages'
+// import { PreciseContext } from '@sourcegraph/cody-shared/src/codebase-context/messages'
+// import { ChatContextStatus } from '@sourcegraph/cody-shared/src/chat/context'
+// import { ChatButton } from '@sourcegraph/cody-shared/src/chat/transcript/messages'
+// import { ContextFile } from '@sourcegraph/cody-shared/src/codebase-context/messages'
+// import { isDefined, pluralize } from '@sourcegraph/cody-shared/src/common'
+// import { CodyPrompt } from '@sourcegraph/cody-shared/src/chat/prompts'
+// import { ActiveTextEditorSelectionRange } from '@sourcegraph/cody-shared/src/editor'
