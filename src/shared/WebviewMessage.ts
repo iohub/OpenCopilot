@@ -33,6 +33,7 @@ export interface WebviewMessage {
 		| "loadModelProvider"
 		| "switchWebview"
 		| "updateProviderConfig"
+		| "SaveSystemPrompts"
 	text?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ApiConfiguration

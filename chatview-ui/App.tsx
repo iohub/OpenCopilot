@@ -332,6 +332,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                     {showPromptEditor && (
                         <PromptEditor 
                             onClose={() => setShowPromptEditor(false)}
+                            clineState={clineState}
                         />
                     )}
                 </>
