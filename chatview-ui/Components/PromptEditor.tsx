@@ -2,39 +2,151 @@ import React, { useState, useEffect } from 'react'
 import styles from './PromptEditor.module.css'
 import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
+import { Controlled as CodeMirror } from 'react-codemirror2'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/theme/monokai.css'
+import 'codemirror/mode/javascript/javascript'
+import 'codemirror/mode/xml/xml'
+import { ExtensionState } from '@sourcegraph/cody-shared/src/common/state'
 
 interface PromptEditorProps {
     onClose: () => void
+    clineState?: ExtensionState
 }
 
-export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose }) => {
-    const [selectedPlatform, setSelectedPlatform] = useState<string>('')
-    const [events, setEvents] = useState<string>('*')
-    const [searchEntity, setSearchEntity] = useState<string>('')
-    const [entities, setEntities] = useState<string[]>([])
-    const [conditions, setConditions] = useState<string>('')
-    const [template, setTemplate] = useState<string>('')
-    const [services, setServices] = useState<string[]>([])
+interface SystemPrompt {
+    id: string
+    name: string
+    prompt: string
+    category: string
+}
 
+interface PromptCategory {
+    title: string
+    prompts: SystemPrompt[]
+}
+
+function systemPromptsToPromptTemplates(extensionState?: ExtensionState): PromptCategory[] {
+    if (!extensionState?.systemPrompts) { 
+        return [] 
+    }
+
+    // 按照 category 对 prompts 进行分组
+    const categoryMap = new Map<string, SystemPrompt[]>()
+    
+    extensionState.systemPrompts.forEach(prompt => {
+        const category = prompt.category || 'General'
+        if (!categoryMap.has(category)) {
+            categoryMap.set(category, [])
+        }
+        categoryMap.get(category)?.push(prompt)
+    })
+
+    // 转换为数组格式并排序
+    const categories: PromptCategory[] = Array.from(categoryMap.entries()).map(([title, prompts]) => ({
+        title,
+        prompts: prompts.sort((a, b) => a.name.localeCompare(b.name))
+    }))
+
+    return categories.sort((a, b) => a.title.localeCompare(b.title))
+}
+
+export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState }) => {
+    const [selectedCategory, setSelectedCategory] = useState<string>('')
+    const [template, setTemplate] = useState<string>('')
+    const [selectedPromptId, setSelectedPromptId] = useState<string>('')
+    const [tags, setTags] = useState<string[]>([])
+    const [newTag, setNewTag] = useState<string>('')
+    const [promptCategories, setPromptCategories] = useState<PromptCategory[]>([])
+
+    // CodeMirror options
+    const cmOptions = {
+        mode: 'javascript',
+        theme: 'monokai',
+        lineNumbers: false,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2,
+        autofocus: true,
+        extraKeys: {
+            'Tab': (cm: any) => {
+                if (cm.somethingSelected()) {
+                    cm.indentSelection('add')
+                } else {
+                    cm.replaceSelection('  ', 'end')
+                }
+            }
+        }
+    }
+
+    // 加载系统提示数据
     useEffect(() => {
-        // 加载初始数据
-        getVSCodeAPI().postMessage({
-            type: 'loadPromptConfig'
-        })
-    }, [])
+        const categories = systemPromptsToPromptTemplates(clineState)
+        setPromptCategories(categories)
+        
+        // 如果有当前选中的系统提示，设置相关状态
+        if (clineState?.systemPrompt) {
+            setSelectedCategory(clineState.systemPrompt.category)
+            setSelectedPromptId(clineState.systemPrompt.id)
+            setTemplate(clineState.systemPrompt.prompt)
+        }
+    }, [clineState])
+
+    // 当选择分类时更新提示列表
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategory(category)
+        
+        // 找到选中分类的第一个提示
+        const selectedCategoryPrompts = promptCategories.find(cat => cat.title === category)?.prompts
+        if (selectedCategoryPrompts && selectedCategoryPrompts.length > 0) {
+            const firstPrompt = selectedCategoryPrompts[0]
+            setSelectedPromptId(firstPrompt.id)
+            setTemplate(firstPrompt.prompt)
+        } else {
+            setSelectedPromptId('')
+            setTemplate('')
+        }
+    }
+
+    // 当选择提示时更新内容
+    const handlePromptChange = (promptId: string) => {
+        const selectedCategory = promptCategories.find(cat => 
+            cat.prompts.some(p => p.id === promptId)
+        )
+        const selectedPrompt = selectedCategory?.prompts.find(p => p.id === promptId)
+        
+        if (selectedPrompt) {
+            setSelectedPromptId(promptId)
+            setTemplate(selectedPrompt.prompt)
+        }
+    }
+
+    const handleAddTag = () => {
+        if (newTag.trim() && !tags.includes(newTag.trim())) {
+            setTags([...tags, newTag.trim()])
+            setNewTag('')
+        }
+    }
+
+    const handleRemoveTag = (tagToRemove: string) => {
+        setTags(tags.filter(tag => tag !== tagToRemove))
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleAddTag()
+        }
+    }
 
     const handleSave = () => {
-        // 保存配置
         getVSCodeAPI().postMessage({
             type: 'savePromptConfig',
             config: {
-                platform: selectedPlatform,
-                events,
-                searchEntity,
-                entities,
-                conditions,
+                category: selectedCategory,
+                promptId: selectedPromptId,
                 template,
-                services
+                tags
             }
         })
         onClose()
@@ -52,106 +164,82 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose }) => {
 
                 <div className={styles.content}>
                     <div className={styles.section}>
-                        <label>Trigger platforms</label>
+                        <label>Category</label>
                         <select 
-                            value={selectedPlatform}
-                            onChange={e => setSelectedPlatform(e.target.value)}
+                            value={selectedCategory}
+                            onChange={e => handleCategoryChange(e.target.value)}
                             className={styles.select}
                         >
-                            <option value="">Select trigger platform</option>
-                            <option value="platform1">Platform 1</option>
-                            <option value="platform2">Platform 2</option>
+                            <option value="">Select category</option>
+                            {promptCategories.map(category => (
+                                <option key={category.title} value={category.title}>
+                                    {category.title}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
                     <div className={styles.section}>
-                        <label>Events</label>
-                        <input
-                            type="text"
-                            value={events}
-                            onChange={e => setEvents(e.target.value)}
-                            className={styles.input}
-                        />
+                        <label>Prompt list</label>
+                        <select 
+                            value={selectedPromptId}
+                            onChange={e => handlePromptChange(e.target.value)}
+                            className={styles.select}
+                            disabled={!selectedCategory}
+                        >
+                            <option value="">Select prompt template</option>
+                            {promptCategories
+                                .find(cat => cat.title === selectedCategory)
+                                ?.prompts.map(prompt => (
+                                    <option key={prompt.id} value={prompt.id}>
+                                        {prompt.name}
+                                    </option>
+                                ))
+                            }
+                        </select>
                     </div>
 
                     <div className={styles.section}>
-                        <label>Search entity</label>
-                        <input
-                            type="text"
-                            value={searchEntity}
-                            onChange={e => setSearchEntity(e.target.value)}
-                            placeholder="sensor.example"
-                            className={styles.input}
-                        />
-                    </div>
-
-                    <div className={styles.section}>
-                        <label>Entities</label>
-                        <div className={styles.entityList}>
-                            {entities.map((entity, index) => (
-                                <div key={index} className={styles.entityItem}>
-                                    <span>{entity}</span>
-                                    <VSCodeButton
-                                        appearance="icon"
-                                        onClick={() => setEntities(entities.filter((_, i) => i !== index))}
+                        <label>Tags</label>
+                        <div className={styles.tagInput}>
+                            <input
+                                type="text"
+                                value={newTag}
+                                onChange={e => setNewTag(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Add tag and press Enter"
+                                className={styles.input}
+                            />
+                            <VSCodeButton onClick={handleAddTag}>Add</VSCodeButton>
+                        </div>
+                        <div className={styles.tagContainer}>
+                            {tags.map(tag => (
+                                <span key={tag} className={styles.tag}>
+                                    {tag}
+                                    <button
+                                        className={styles.removeTag}
+                                        onClick={() => handleRemoveTag(tag)}
                                     >
-                                        <i className="codicon codicon-close" />
-                                    </VSCodeButton>
-                                </div>
+                                    </button>
+                                </span>
                             ))}
-                            <VSCodeButton onClick={() => setEntities([...entities, ''])}>
-                                Add Entity
-                            </VSCodeButton>
                         </div>
                     </div>
+                </div>
 
-                    <div className={styles.section}>
-                        <label>Conditions</label>
-                        <textarea
-                            value={conditions}
-                            onChange={e => setConditions(e.target.value)}
-                            className={styles.textarea}
-                            rows={4}
-                        />
-                    </div>
-
-                    <div className={styles.section}>
-                        <label>Template</label>
-                        <textarea
+                <div className={styles.section}>
+                    <label>Prompt Template</label>
+                    <div className={styles.editorWrapper}>
+                        <CodeMirror
                             value={template}
-                            onChange={e => setTemplate(e.target.value)}
-                            className={styles.textarea}
-                            rows={4}
+                            options={{
+                                ...cmOptions,
+                                mode: 'javascript'
+                            }}
+                            onBeforeChange={(editor, data, value) => {
+                                setTemplate(value)
+                            }}
                         />
-                    </div>
-
-                    <div className={styles.section}>
-                        <label>Services</label>
-                        <div className={styles.serviceList}>
-                            {services.map((service, index) => (
-                                <div key={index} className={styles.serviceItem}>
-                                    <input
-                                        type="text"
-                                        value={service}
-                                        onChange={e => {
-                                            const newServices = [...services]
-                                            newServices[index] = e.target.value
-                                            setServices(newServices)
-                                        }}
-                                        className={styles.input}
-                                    />
-                                    <VSCodeButton
-                                        appearance="icon"
-                                        onClick={() => setServices(services.filter((_, i) => i !== index))}
-                                    >
-                                        <i className="codicon codicon-close" />
-                                    </VSCodeButton>
-                                </div>
-                            ))}
-                            <VSCodeButton onClick={() => setServices([...services, ''])}>
-                                Add Service
-                            </VSCodeButton>
-                        </div>
                     </div>
                 </div>
 

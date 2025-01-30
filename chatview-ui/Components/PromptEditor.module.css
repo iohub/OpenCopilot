@@ -88,4 +88,80 @@
     gap: 8px;
     padding: 16px;
     border-top: 1px solid var(--vscode-widget-border);
+}
+
+.editorWrapper {
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    overflow: hidden;
+    min-height: 200px;
+}
+
+.editorWrapper :global(.CodeMirror) {
+    height: auto;
+    min-height: 200px;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+}
+
+.editorWrapper :global(.CodeMirror-gutters) {
+    background: var(--vscode-editor-background);
+    border-right: 1px solid var(--vscode-input-border);
+}
+
+.editorWrapper :global(.CodeMirror-linenumber) {
+    color: var(--vscode-editorLineNumber-foreground);
+}
+
+.editorWrapper :global(.CodeMirror-cursor) {
+    border-left: 2px solid var(--vscode-editorCursor-foreground);
+}
+
+.editorWrapper :global(.CodeMirror-selected) {
+    background: var(--vscode-editor-selectionBackground) !important;
+}
+
+.tagInput {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.tagContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.removeTag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.removeTag:hover {
+    opacity: 1;
 } 
