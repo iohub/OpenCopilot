@@ -55,7 +55,7 @@ interface AddPromptDialogProps {
     isOpen: boolean
     category: string
     onClose: () => void
-    onSave: (name: string, prompt: string) => void
+    onSave: (name: string, category: string, prompt: string) => void
 }
 
 interface AddCategoryDialogProps {
@@ -66,6 +66,7 @@ interface AddCategoryDialogProps {
 
 const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onClose, onSave }) => {
     const [name, setName] = useState('')
+    const [categoryName, setCategoryName] = useState(category)
     const [prompt, setPrompt] = useState('')
 
     if (!isOpen) return null
@@ -78,12 +79,12 @@ const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onC
                     <VSCodeTextField
                         value={name}
                         onChange={e => setName((e.target as HTMLInputElement).value)}
-                        placeholder="template name"
+                        placeholder="Template name"
                     />
                     <VSCodeTextField
-                        value={name}
-                        onChange={e => setName((e.target as HTMLInputElement).value)}
-                        placeholder="category name"
+                        value={categoryName}
+                        onChange={e => setCategoryName((e.target as HTMLInputElement).value)}
+                        placeholder="Category name"
                     />
                     <textarea
                         value={prompt}
@@ -95,8 +96,9 @@ const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onC
                 <div className={styles.dialogFooter}>
                     <VSCodeButton onClick={onClose}>Cancel</VSCodeButton>
                     <VSCodeButton onClick={() => {
-                        onSave(name, prompt)
+                        onSave(name, categoryName, prompt)
                         setName('')
+                        setCategoryName('')
                         setPrompt('')
                     }}>Save</VSCodeButton>
                 </div>
@@ -215,14 +217,36 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
         onClose()
     }
 
-    const handleAddPrompt = (name: string, promptContent: string) => {
+    const handleAddPrompt = (name: string, category: string, promptContent: string) => {
         const newPrompt: SystemPrompt = {
             id: `${Date.now()}`, // 生成临时ID
             name,
             prompt: promptContent,
-            category: selectedCategory
+            category
         }
 
+        // 更新本地状态
+        setPromptCategories(prevCategories => {
+            const categoryIndex = prevCategories.findIndex(cat => cat.title === category)
+            
+            if (categoryIndex === -1) {
+                // 如果分类不存在，创建新分类
+                return [...prevCategories, {
+                    title: category,
+                    prompts: [newPrompt]
+                }]
+            }
+            
+            // 如果分类存在，添加到现有分类
+            const newCategories = [...prevCategories]
+            newCategories[categoryIndex] = {
+                ...newCategories[categoryIndex],
+                prompts: [...newCategories[categoryIndex].prompts, newPrompt]
+            }
+            return newCategories
+        })
+
+        // 发送消息到扩展
         getVSCodeAPI().postMessage({
             type: 'addSystemPrompt',
             prompt: newPrompt
