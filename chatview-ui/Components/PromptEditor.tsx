@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styles from './PromptEditor.module.css'
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
+import { VSCodeButton, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
 import { Controlled as CodeMirror } from 'react-codemirror2'
 import 'codemirror/lib/codemirror.css'
@@ -51,13 +51,90 @@ function systemPromptsToPromptTemplates(extensionState?: ExtensionState): Prompt
     return categories.sort((a, b) => a.title.localeCompare(b.title))
 }
 
+interface AddPromptDialogProps {
+    isOpen: boolean
+    category: string
+    onClose: () => void
+    onSave: (name: string, prompt: string) => void
+}
+
+interface AddCategoryDialogProps {
+    isOpen: boolean
+    onClose: () => void
+    onSave: (category: string) => void
+}
+
+const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onClose, onSave }) => {
+    const [name, setName] = useState('')
+    const [prompt, setPrompt] = useState('')
+
+    if (!isOpen) return null
+
+    return (
+        <div className={styles.dialogOverlay}>
+            <div className={styles.dialog}>
+                <h3>Add New Template</h3>
+                <div className={styles.dialogContent}>
+                    <VSCodeTextField
+                        value={name}
+                        onChange={e => setName((e.target as HTMLInputElement).value)}
+                        placeholder="Template name"
+                    />
+                    <textarea
+                        value={prompt}
+                        onChange={e => setPrompt(e.target.value)}
+                        placeholder="Prompt content"
+                        className={styles.dialogTextarea}
+                    />
+                </div>
+                <div className={styles.dialogFooter}>
+                    <VSCodeButton onClick={onClose}>Cancel</VSCodeButton>
+                    <VSCodeButton onClick={() => {
+                        onSave(name, prompt)
+                        setName('')
+                        setPrompt('')
+                    }}>Save</VSCodeButton>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const AddCategoryDialog: React.FC<AddCategoryDialogProps> = ({ isOpen, onClose, onSave }) => {
+    const [category, setCategory] = useState('')
+
+    if (!isOpen) return null
+
+    return (
+        <div className={styles.dialogOverlay}>
+            <div className={styles.dialog}>
+                <h3>Add New Category</h3>
+                <div className={styles.dialogContent}>
+                    <VSCodeTextField
+                        value={category}
+                        onChange={e => setCategory((e.target as HTMLInputElement).value)}
+                        placeholder="Category name"
+                    />
+                </div>
+                <div className={styles.dialogFooter}>
+                    <VSCodeButton onClick={onClose}>Cancel</VSCodeButton>
+                    <VSCodeButton onClick={() => {
+                        onSave(category)
+                        setCategory('')
+                    }}>Save</VSCodeButton>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState }) => {
     const [selectedCategory, setSelectedCategory] = useState<string>('')
     const [template, setTemplate] = useState<string>('')
     const [selectedPromptId, setSelectedPromptId] = useState<string>('')
-    const [tags, setTags] = useState<string[]>([])
-    const [newTag, setNewTag] = useState<string>('')
     const [promptCategories, setPromptCategories] = useState<PromptCategory[]>([])
+    const [isAddPromptOpen, setIsAddPromptOpen] = useState(false)
+    const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
 
     // CodeMirror options
     const cmOptions = {
@@ -152,6 +229,31 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
         onClose()
     }
 
+    const handleAddPrompt = (name: string, promptContent: string) => {
+        const newPrompt: SystemPrompt = {
+            id: `${Date.now()}`, // 生成临时ID
+            name,
+            prompt: promptContent,
+            category: selectedCategory
+        }
+
+        getVSCodeAPI().postMessage({
+            type: 'addSystemPrompt',
+            prompt: newPrompt
+        })
+
+        setIsAddPromptOpen(false)
+    }
+
+    const handleAddCategory = (categoryName: string) => {
+        getVSCodeAPI().postMessage({
+            type: 'addPromptCategory',
+            category: categoryName
+        })
+
+        setIsAddCategoryOpen(false)
+    }
+
     return (
         <div className={styles.overlay}>
             <div className={styles.container}>
@@ -164,7 +266,16 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
 
                 <div className={styles.content}>
                     <div className={styles.section}>
-                        <label>Category</label>
+                        <div className={styles.sectionHeader}>
+                            <label>Category</label>
+                            <VSCodeButton 
+                                appearance="icon"
+                                onClick={() => setIsAddCategoryOpen(true)}
+                                title="Add new category"
+                            >
+                                <i className="codicon codicon-add" />
+                            </VSCodeButton>
+                        </div>
                         <select 
                             value={selectedCategory}
                             onChange={e => handleCategoryChange(e.target.value)}
@@ -180,7 +291,17 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
                     </div>
 
                     <div className={styles.section}>
-                        <label>Prompt list</label>
+                        <div className={styles.sectionHeader}>
+                            <label>Prompt list</label>
+                            <VSCodeButton 
+                                appearance="icon"
+                                onClick={() => setIsAddPromptOpen(true)}
+                                title="Add new template"
+                                disabled={!selectedCategory}
+                            >
+                                <i className="codicon codicon-add" />
+                            </VSCodeButton>
+                        </div>
                         <select 
                             value={selectedPromptId}
                             onChange={e => handlePromptChange(e.target.value)}
@@ -199,32 +320,6 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
                         </select>
                     </div>
 
-                    <div className={styles.section}>
-                        <label>Tags</label>
-                        <div className={styles.tagInput}>
-                            <input
-                                type="text"
-                                value={newTag}
-                                onChange={e => setNewTag(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                placeholder="Add tag and press Enter"
-                                className={styles.input}
-                            />
-                            <VSCodeButton onClick={handleAddTag}>Add</VSCodeButton>
-                        </div>
-                        <div className={styles.tagContainer}>
-                            {tags.map(tag => (
-                                <span key={tag} className={styles.tag}>
-                                    {tag}
-                                    <button
-                                        className={styles.removeTag}
-                                        onClick={() => handleRemoveTag(tag)}
-                                    >
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
                 </div>
 
                 <div className={styles.section}>
@@ -247,6 +342,19 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
                     <VSCodeButton onClick={onClose}>Cancel</VSCodeButton>
                     <VSCodeButton onClick={handleSave}>Save</VSCodeButton>
                 </div>
+
+                <AddPromptDialog
+                    isOpen={isAddPromptOpen}
+                    category={selectedCategory}
+                    onClose={() => setIsAddPromptOpen(false)}
+                    onSave={handleAddPrompt}
+                />
+
+                <AddCategoryDialog
+                    isOpen={isAddCategoryOpen}
+                    onClose={() => setIsAddCategoryOpen(false)}
+                    onSave={handleAddCategory}
+                />
             </div>
         </div>
     )

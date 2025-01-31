@@ -164,4 +164,62 @@
 
 .removeTag:hover {
     opacity: 1;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.dialog {
+    background: var(--vscode-editor-background);
+    border-radius: 6px;
+    padding: 16px;
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid var(--vscode-widget-border);
+}
+
+.dialog h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+
+.dialogContent {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.dialogTextarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 8px;
+    border: 1px solid var(--vscode-input-border);
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.dialogFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 } 
