@@ -78,7 +78,12 @@ const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onC
                     <VSCodeTextField
                         value={name}
                         onChange={e => setName((e.target as HTMLInputElement).value)}
-                        placeholder="Template name"
+                        placeholder="template name"
+                    />
+                    <VSCodeTextField
+                        value={name}
+                        onChange={e => setName((e.target as HTMLInputElement).value)}
+                        placeholder="category name"
                     />
                     <textarea
                         value={prompt}
@@ -249,13 +254,6 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
                     <div className={styles.section}>
                         <div className={styles.sectionHeader}>
                             <label>Category</label>
-                            <VSCodeButton 
-                                appearance="icon"
-                                onClick={() => setIsAddCategoryOpen(true)}
-                                title="Add new category"
-                            >
-                                <i className="codicon codicon-add" />
-                            </VSCodeButton>
                         </div>
                         <select 
                             value={selectedCategory}
@@ -273,7 +271,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
 
                     <div className={styles.section}>
                         <div className={styles.sectionHeader}>
-                            <label>Prompt list</label>
+                            <label>Prompts</label>
                             <VSCodeButton 
                                 appearance="icon"
                                 onClick={() => setIsAddPromptOpen(true)}
