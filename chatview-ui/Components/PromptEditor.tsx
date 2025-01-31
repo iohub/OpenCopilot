@@ -198,24 +198,6 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
         }
     }
 
-    const handleAddTag = () => {
-        if (newTag.trim() && !tags.includes(newTag.trim())) {
-            setTags([...tags, newTag.trim()])
-            setNewTag('')
-        }
-    }
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove))
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            handleAddTag()
-        }
-    }
-
     const handleSave = () => {
         getVSCodeAPI().postMessage({
             type: 'savePromptConfig',
@@ -223,7 +205,6 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
                 category: selectedCategory,
                 promptId: selectedPromptId,
                 template,
-                tags
             }
         })
         onClose()
