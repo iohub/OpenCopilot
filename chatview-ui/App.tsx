@@ -84,6 +84,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
         groups: [],
     })
     const [showPromptEditor, setShowPromptEditor] = useState(false)
+    const [showModelSettings, setShowModelSettings] = useState(false)
 
     const onConsentToEmbeddings = useCallback((): void => {
         vscodeAPI.postMessage({ command: 'embeddings/index' })
@@ -324,6 +325,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                                         clineState={clineState}
                                         setChatModels={setChatModels}
                                         setShowPromptEditor={setShowPromptEditor}
+                                        setShowModelSettings={setShowModelSettings}
                                     />
                                 </EnhancedContextEnabled.Provider>
                             </EnhancedContextContext.Provider>
@@ -332,6 +334,12 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                     {showPromptEditor && (
                         <PromptEditor 
                             onClose={() => setShowPromptEditor(false)}
+                            clineState={clineState}
+                        />
+                    )}
+                    {showModelSettings && (
+                        <ModelSettings 
+                            onClose={() => setShowModelSettings(false)}
                             clineState={clineState}
                         />
                     )}

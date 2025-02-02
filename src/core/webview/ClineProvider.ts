@@ -573,13 +573,13 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					}
 					case "SaveSystemPrompts": {
 						if(message.text){
-							console.log(`SaveSystemPrompts:\n${message.text}`)
+							// console.log(`SaveSystemPrompts:\n${message.text}`)
 							await this.saveSystemPrompts(message.text)
 						}
 						break
 					}
 					case "updateSystemPrompt": {
-						console.log(`set system prompt to ${JSON.stringify(message.text)}`)
+						// console.log(`set system prompt to ${JSON.stringify(message.text)}`)
 						const systemPrompts = await this.loadSystemPrompts()
 						const prompt =  systemPrompts.find((prompt) => prompt.id === message.text)
 						if (prompt) {
