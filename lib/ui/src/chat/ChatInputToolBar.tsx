@@ -234,7 +234,7 @@ export const ChatInputToolBar: React.FC<{
                 onSelect={(option) => {
                   setIsPromptDropdownOpen(false);
                   getVSCodeAPI().postMessage({
-                    type: "updateSystemPrompt",
+                    type: "switchSystemPrompt",
                     text: option.model,
                   });
                 }}

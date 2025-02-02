@@ -578,7 +578,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 						break
 					}
-					case "updateSystemPrompt": {
+					case "switchSystemPrompt": {
 						// console.log(`set system prompt to ${JSON.stringify(message.text)}`)
 						const systemPrompts = await this.loadSystemPrompts()
 						const prompt =  systemPrompts.find((prompt) => prompt.id === message.text)
@@ -588,6 +588,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						if (this.cline && prompt) {
 							this.cline.systemPrompt = prompt
 						}
+						await this.postStateToWebview()
 						break
 					}
 					case "switchToProvider": {
