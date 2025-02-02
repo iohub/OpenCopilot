@@ -210,6 +210,36 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
     }
 
     const handleSave = () => {
+        // 如果有选中的prompt且内容有变化
+        if (selectedPromptId && template) {
+            setPromptCategories(prevCategories => {
+                const newCategories = prevCategories.map(cat => {
+                    const updatedPrompts = cat.prompts.map(p => {
+                        if (p.id === selectedPromptId) {
+                            return {
+                                ...p,
+                                prompt: template
+                            }
+                        }
+                        return p
+                    })
+                    return {
+                        ...cat,
+                        prompts: updatedPrompts
+                    }
+                })
+
+                // 发送更新后的数据
+                const systemPrompts = promptCategoryToSystemPrompts(newCategories)
+                getVSCodeAPI().postMessage({
+                    type: 'SaveSystemPrompts',
+                    text: JSON.stringify(systemPrompts, null, 2)
+                })
+
+                return newCategories
+            })
+        }
+
         onClose()
     }
 
