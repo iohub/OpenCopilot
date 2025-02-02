@@ -575,6 +575,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						if(message.text){
 							// console.log(`SaveSystemPrompts:\n${message.text}`)
 							await this.saveSystemPrompts(message.text)
+							await this.postStateToWebview()
 						}
 						break
 					}
