@@ -104,7 +104,8 @@ export const ChatInputToolBar: React.FC<{
   onChatSubmit?: (text: string) => void
   extensionState?: ExtensionState
   setShowPromptEditor?: (show: boolean) => void
-}> = ({ onChatSubmit, extensionState, setShowPromptEditor }) => {
+  setShowModelSettings?: (show: boolean) => void
+}> = ({ onChatSubmit, extensionState, setShowPromptEditor, setShowModelSettings }) => {
   const [inputValue, setInputValue] = useState('');
   const modelCategory = modelOptionsToCategories(extensionState);
   const promptCategory = systemPromptsToCategories(extensionState);
@@ -150,10 +151,9 @@ export const ChatInputToolBar: React.FC<{
 
   const handleEditModel = () => {
     setIsModelDropdownOpen(false);
-    getVSCodeAPI().postMessage({
-      type: "openFile",
-      text: "{ModelProviderFile}"
-    })
+    if (setShowModelSettings) {
+      setShowModelSettings(true);
+    }
   };
 
   const handleToggleModelDropdown = () => {
@@ -234,7 +234,7 @@ export const ChatInputToolBar: React.FC<{
                 onSelect={(option) => {
                   setIsPromptDropdownOpen(false);
                   getVSCodeAPI().postMessage({
-                    type: "updateSystemPrompt",
+                    type: "switchSystemPrompt",
                     text: option.model,
                   });
                 }}

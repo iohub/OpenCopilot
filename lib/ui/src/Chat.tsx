@@ -71,6 +71,7 @@ interface ChatProps extends ChatClassNames {
     clineState?: ExtensionState
     onCurrentChatModelChange?: (model: ChatModelSelection) => void
     setShowPromptEditor?: (show: boolean) => void
+    setShowModelSettings?: (show: boolean) => void
 }
 
 interface ChatClassNames extends TranscriptItemClassNames {
@@ -223,6 +224,7 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
     clineState,
     onCurrentChatModelChange,
     setShowPromptEditor,
+    setShowModelSettings,
 }) => {
     const [inputRows, setInputRows] = useState(1)
     const [displayCommands, setDisplayCommands] = useState<[string, CodyPrompt & { instruction?: string }][] | null>(
@@ -601,7 +603,12 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
                             setSelectedChatContext={setSelectedChatContext}
                         />
                     )}
-                    <ChatInputToolBar onChatSubmit={onChatSubmit} extensionState={clineState} setShowPromptEditor={setShowPromptEditor} />
+                    <ChatInputToolBar
+                        onChatSubmit={onChatSubmit}
+                        extensionState={clineState}
+                        setShowPromptEditor={setShowPromptEditor}
+                        setShowModelSettings={setShowModelSettings}
+                    />
                 </div>
                 {!EnhancedContextSettings && ContextStatusComponent && (
                     <ContextStatusComponent {...contextStatusComponentProps} />

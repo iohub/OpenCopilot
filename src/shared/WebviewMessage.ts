@@ -28,11 +28,12 @@ export interface WebviewMessage {
 		| "restartMcpServer"
 		| "autoApprovalSettings"
 		| "loadSystemPrompts"
-		| "updateSystemPrompt"
+		| "switchSystemPrompt"
 		| "switchToProvider"
 		| "loadModelProvider"
 		| "switchWebview"
 		| "updateProviderConfig"
+		| "SaveSystemPrompts"
 	text?: string
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ApiConfiguration

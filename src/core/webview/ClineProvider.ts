@@ -571,8 +571,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.postStateToWebview()
 						break
 					}
-					case "updateSystemPrompt": {
-						console.log(`set system prompt to ${JSON.stringify(message.text)}`)
+					case "SaveSystemPrompts": {
+						if(message.text){
+							// console.log(`SaveSystemPrompts:\n${message.text}`)
+							await this.saveSystemPrompts(message.text)
+							await this.postStateToWebview()
+						}
+						break
+					}
+					case "switchSystemPrompt": {
+						// console.log(`set system prompt to ${JSON.stringify(message.text)}`)
 						const systemPrompts = await this.loadSystemPrompts()
 						const prompt =  systemPrompts.find((prompt) => prompt.id === message.text)
 						if (prompt) {
@@ -581,6 +589,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						if (this.cline && prompt) {
 							this.cline.systemPrompt = prompt
 						}
+						await this.postStateToWebview()
 						break
 					}
 					case "switchToProvider": {
@@ -1199,6 +1208,14 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		return await JSON.parse(await fs.readFile(filePath, "utf8"))
 	}
 
+	private async saveSystemPrompts(promptsJsonStr: string) {
+		const dirPath = path.join(os.homedir(), ".ocopilot")
+		if (!(await this.fileExists(dirPath))) {
+			await fs.mkdir(dirPath, { recursive: true })
+		}
+		const filePath = path.join(dirPath, AlineGlobalFileNames.systemPrompts)
+		await fs.writeFile(filePath, promptsJsonStr, "utf8")
+	}
 
 	private async loadModelProvider() : Promise<ModelProvider[]> {
 		const dirPath = path.join(os.homedir(), ".ocopilot")

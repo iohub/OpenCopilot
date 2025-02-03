@@ -68,6 +68,7 @@ interface ChatboxProps {
     clineState?: ExtensionState
     enableNewChatUI: boolean
     setShowPromptEditor?: (show: boolean) => void
+    setShowModelSettings?: (show: boolean) => void
 }
 
 export interface ChatUISubmitButtonProps {
@@ -102,6 +103,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
     clineState,
     enableNewChatUI,
     setShowPromptEditor,
+    setShowModelSettings,
 }) => {
     const [abortMessageInProgressInternal, setAbortMessageInProgress] = useState<() => void>(() => () => undefined)
 
@@ -276,6 +278,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
             clineState={clineState}
             EnhancedContextSettings={enableNewChatUI ? EnhancedContextSettings : undefined}
             setShowPromptEditor={setShowPromptEditor}
+            setShowModelSettings={setShowModelSettings}
         />
     )
 }
