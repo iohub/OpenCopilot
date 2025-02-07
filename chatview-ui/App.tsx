@@ -8,7 +8,7 @@ import { CodyPrompt } from '@sourcegraph/cody-shared/src/chat/prompts'
 import { ChatHistory, ChatMessage } from '@sourcegraph/cody-shared/src/chat/transcript/messages'
 import { EnhancedContextContextT } from '@sourcegraph/cody-shared/src/codebase-context/context-status'
 import { Configuration } from '@sourcegraph/cody-shared/src/configuration'
-import { ExtensionState } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
 import { ChatModelSelection } from '@sourcegraph/cody-ui/src/Chat'
 
 import { AuthMethod, AuthStatus, LocalEnv, authenticatedStatus } from '@sourcegraph/cody-shared/src/chat/protocol'
@@ -21,13 +21,13 @@ import {
 } from './Components/EnhancedContextSettings'
 import { LoadingPage } from './LoadingPage'
 import { View } from './NavBar'
-import { Notices } from './Notices'
 import { LoginSimplified } from './OnboardingExperiment'
 import { UserHistory } from './UserHistory'
 import { createWebviewTelemetryService } from './utils/telemetry'
 import type { VSCodeWrapper } from './utils/VSCodeApi'
 import { ModelSettings } from './ModelSettings'
 import { PromptEditor } from './Components/PromptEditor'
+import { CommandEditor } from './Components/CommandEditor'
 
 export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vscodeAPI }) => {
 
@@ -68,7 +68,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
 
     const [contextStatus, setContextStatus] = useState<ChatContextStatus | null>(null)
     const [contextSelection, setContextSelection] = useState<ContextFile[] | null>(null)
-    const [clineState, setClineState] = useState<ExtensionState | undefined>(undefined)
+    const [sharedState, setSharedState] = useState<SharedState | undefined>(undefined)
     const [errorMessages, setErrorMessages] = useState<string[]>([])
     const [suggestions, setSuggestions] = useState<string[] | undefined>()
     const [isAppInstalled, setIsAppInstalled] = useState<boolean>(false)
@@ -85,6 +85,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
     })
     const [showPromptEditor, setShowPromptEditor] = useState(false)
     const [showModelSettings, setShowModelSettings] = useState(false)
+    const [showCommandEditor, setShowCommandEditor] = useState(false)
 
     const onConsentToEmbeddings = useCallback((): void => {
         vscodeAPI.postMessage({ command: 'embeddings/index' })
@@ -114,7 +115,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                         break
                     }
                     case 'state': {
-                        setClineState(message.state)
+                        setSharedState(message.state)
                         break
                     }
                     case 'config':
@@ -187,6 +188,9 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                         if (message.action === 'clear-transcripts') {
                             setTranscript([])
                             setMessageInProgress(null)
+                        }
+                        if (message.action === 'show-command-editor') {
+                            setShowCommandEditor(true)
                         }
                         break
                     }
@@ -279,7 +283,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                     {view === 'settings' && (
                         <ModelSettings 
                             onClose={() => setView('chat')}
-                            clineState={clineState}
+                            sharedState={sharedState}
                         />
                     )}
                     {view === 'chat' && (
@@ -322,10 +326,11 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                                         }}
                                         chatModels={chatModels}
                                         enableNewChatUI={config.experimentalChatPanel || false}
-                                        clineState={clineState}
+                                        sharedState={sharedState}
                                         setChatModels={setChatModels}
                                         setShowPromptEditor={setShowPromptEditor}
                                         setShowModelSettings={setShowModelSettings}
+                                        setShowCommandEditor={setShowCommandEditor}
                                     />
                                 </EnhancedContextEnabled.Provider>
                             </EnhancedContextContext.Provider>
@@ -334,13 +339,19 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                     {showPromptEditor && (
                         <PromptEditor 
                             onClose={() => setShowPromptEditor(false)}
-                            clineState={clineState}
+                            sharedState={sharedState}
                         />
                     )}
                     {showModelSettings && (
                         <ModelSettings 
                             onClose={() => setShowModelSettings(false)}
-                            clineState={clineState}
+                            sharedState={sharedState}
+                        />
+                    )}
+                    {showCommandEditor && (
+                        <CommandEditor 
+                            onClose={() => setShowCommandEditor(false)}
+                            commands={Array.isArray(sharedState?.codeLensCommands) ? sharedState.codeLensCommands : []}
                         />
                     )}
                 </>

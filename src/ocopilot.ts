@@ -4,13 +4,13 @@ import path from "path"
 import { CommandCodeLens } from "./integrations/codelens/CommandProvider"
 import { ClineProvider } from "./core/webview/ClineProvider"
 
-export function ocopilotActivate(context: vscode.ExtensionContext, sidebarProvider: ClineProvider) {
+export async function ocopilotActivate(context: vscode.ExtensionContext, sidebarProvider: ClineProvider) {
     // Initialize parser
     GlobalParser.getInstance().initialize()
 
     // Register CodeLens provider
     const supportedLanguages = ['javascript', 'python', 'java', 'typescript']
-    const provider = new CommandCodeLens()
+    const provider = new CommandCodeLens(await sidebarProvider.loadCodelenCommands())
     
     // Register for each supported language
     supportedLanguages.forEach(language => {
@@ -25,7 +25,7 @@ export function ocopilotActivate(context: vscode.ExtensionContext, sidebarProvid
     // Register edit config command
     context.subscriptions.push(
         vscode.commands.registerCommand('ocopilot.editCodeLensConfig', async () => {
-            await provider.openConfigFile()
+            await sidebarProvider.postMessageToWebview({ type: "action", action: "show-command-editor" })
         })
     )
 
@@ -74,11 +74,11 @@ export function ocopilotActivate(context: vscode.ExtensionContext, sidebarProvid
 				.replace('{code}', code)
 
 			await sidebarProvider.initClineWithTask(message, undefined)
-			if (sidebarProvider.InClineView()) {
-				await sidebarProvider.switchToChatView()
-			}
+			if (sidebarProvider.InClineView()) { await sidebarProvider.switchToChatView() }
 		})
 	)
+
+	sidebarProvider.setCodelensProvider(provider)
 }
 
 export function ocopilotDeactivate() {

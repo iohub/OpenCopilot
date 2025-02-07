@@ -25,10 +25,10 @@ import { getUri } from "./getUri"
 import { GlobalFileNames as AlineGlobalFileNames } from "../../shared/AlineDefined"
 import { AutoApprovalSettings, DEFAULT_AUTO_APPROVAL_SETTINGS } from "../../shared/AutoApprovalSettings"
 import { CLINE_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_STR, SystemPrompt, isClineBuiltInPrompt } from "../../shared/SystemPrompt"
-import { DEFAULT_MODEL_PROVIDER_STR, ModelProvider } from "../../shared/AlineConfig"
+import { DEFAULT_CODELENS_COMMANDS_STR, DEFAULT_MODEL_PROVIDER_STR, ModelProvider } from "../../shared/AlineConfig"
 import { ChatMessage } from '@sourcegraph/cody-shared/src/chat/transcript/messages'
-import { ProviderConfig } from '@sourcegraph/cody-shared/src/common/state'
-
+import { CodeLensCommand, ProviderConfig } from '@sourcegraph/cody-shared/src/common/state'
+import { CommandCodeLens } from "../../integrations/codelens/CommandProvider"
 /*
 https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
 
@@ -91,6 +91,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	mcpHub?: McpHub
 	private latestAnnouncementId = "dec-17-2024" // update to some unique identifier when we add a new announcement
 	private inClineView = true
+	private codelensProvider?: CommandCodeLens
 
 	constructor(
 		readonly context: vscode.ExtensionContext,
@@ -579,6 +580,14 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 						break
 					}
+					case "SaveCommands": {
+						if(message.text){
+							await this.saveCommands(message.text)
+							await this.updateCodelensCommands(JSON.parse(message.text)['commands'])
+							await this.postStateToWebview()
+						}
+						break
+					}
 					case "switchSystemPrompt": {
 						// console.log(`set system prompt to ${JSON.stringify(message.text)}`)
 						const systemPrompts = await this.loadSystemPrompts()
@@ -749,32 +758,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		let models: Record<string, ModelInfo> = {}
 		try {
 			const response = await axios.get("https://openrouter.ai/api/v1/models")
-			/*
-			{
-				"id": "anthropic/claude-3.5-sonnet",
-				"name": "Anthropic: Claude 3.5 Sonnet",
-				"created": 1718841600,
-				"description": "Claude 3.5 Sonnet delivers better-than-Opus capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Sonnet is particularly good at:\n\n- Coding: Autonomously writes, edits, and runs code with reasoning and troubleshooting\n- Data science: Augments human data science expertise; navigates unstructured data while using multiple tools for insights\n- Visual processing: excelling at interpreting charts, graphs, and images, accurately transcribing text to derive insights beyond just the text alone\n- Agentic tasks: exceptional tool use, making it great at agentic tasks (i.e. complex, multi-step problem solving tasks that require engaging with other systems)\n\n#multimodal",
-				"context_length": 200000,
-				"architecture": {
-					"modality": "text+image-\u003Etext",
-					"tokenizer": "Claude",
-					"instruct_type": null
-				},
-				"pricing": {
-					"prompt": "0.000003",
-					"completion": "0.000015",
-					"image": "0.0048",
-					"request": "0"
-				},
-				"top_provider": {
-					"context_length": 200000,
-					"max_completion_tokens": 8192,
-					"is_moderated": true
-				},
-				"per_request_limits": null
-			},
-			*/
 			if (response.data?.data) {
 				const rawModels = response.data.data
 				const parsePrice = (price: any) => {
@@ -952,6 +935,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			systemPrompts: systemPrompts || [],
 			systemPrompt: systemPrompt || CLINE_SYSTEM_PROMPT,
 			modelOptions: modelOptions || [],
+			codeLensCommands: await this.loadCodelenCommands(),
 		}
 	}
 
@@ -1217,6 +1201,15 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		await fs.writeFile(filePath, promptsJsonStr, "utf8")
 	}
 
+	private async saveCommands(commandsJsonStr: string) {
+		const dirPath = path.join(os.homedir(), ".ocopilot")
+		if (!(await this.fileExists(dirPath))) {
+			await fs.mkdir(dirPath, { recursive: true })
+		}
+		const filePath = path.join(dirPath, AlineGlobalFileNames.codelensCommands)
+		await fs.writeFile(filePath, commandsJsonStr, "utf8")
+	}
+
 	private async loadModelProvider() : Promise<ModelProvider[]> {
 		const dirPath = path.join(os.homedir(), ".ocopilot")
 		if (!(await this.fileExists(dirPath))) {
@@ -1248,25 +1241,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			.replaceAll('{cspSource}', `${view.webview.cspSource} 'unsafe-inline'`)
 	}
 
-	public async testSendTranscript() {
-		if (!this.view) { return }
-	    await this.sendTranscripts(this.view, [
-			{
-				speaker: 'human',
-				displayText:
-					"Explain the following code at a high level:\n\n```\nprivate getNonce(): string {\n  let text = ''\n  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'\n  for (let i = 0; i < 32; i++) {\n    text += possible.charAt(Math.floor(Math.random() * possible.length))\n  }\n  return text\n}\n```",
-				contextFiles: [
-					{ fileName: 'vscode/src/chat/ChatViewProvider.ts' },
-					{ fileName: 'lib/shared/src/timestamp.ts' },
-				],
-			},
-			{
-				speaker: 'assistant',
-				displayText: 'This code generates a random 32-character string (nonce) using characters A-Z, a-z, and 0-9.',
-			}
-		], false, "chat-123")
-	}
-
 	public async sendClineMessagesToTranscript() {
 		if (!this.view || !this.cline) { return }
 		const transcripts: ChatMessage[] = []
@@ -1294,6 +1268,27 @@ export class ClineProvider implements vscode.WebviewViewProvider {
             chatID: chatID,
         })
     }
+
+	public async loadCodelenCommands() : Promise<CodeLensCommand[]> {
+        try {
+            const configPath = path.join(os.homedir(), ".ocopilot", AlineGlobalFileNames.codelensCommands)
+            try {
+                const userConfig = await fs.readFile(configPath, 'utf-8')
+                return JSON.parse(userConfig)['commands']
+            } catch {  return JSON.parse(DEFAULT_CODELENS_COMMANDS_STR)['commands'] }
+        } catch (error) {
+            console.error('Error loading codelens commands:', error)
+            return []
+        }
+    }
+
+	public setCodelensProvider(provider: CommandCodeLens) {
+		this.codelensProvider = provider
+	}
+
+	public updateCodelensCommands(commands: CodeLensCommand[]) {
+		this.codelensProvider?.updateCommands(commands)
+	}
 
 	// dev
 

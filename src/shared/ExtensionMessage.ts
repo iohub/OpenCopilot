@@ -1,6 +1,6 @@
 // type that represents json data that is sent from extension to webview, called ExtensionMessage and has 'type' enum which can be 'plusButtonClicked' or 'settingsButtonClicked' or 'hello'
 
-import { ProviderConfig } from "@sourcegraph/cody-shared/src/common/state"
+import { CodeLensCommand } from "@sourcegraph/cody-shared/src/common/state"
 import { ModelProvider } from "./AlineConfig"
 import { ApiConfiguration, ModelInfo } from "./api"
 import { AutoApprovalSettings } from "./AutoApprovalSettings"
@@ -33,6 +33,7 @@ export interface ExtensionMessage {
 		| "historyButtonClicked"
 		| "didBecomeVisible"
 		| "clear-transcripts"
+		| "show-command-editor"
 	invoke?: "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
 	state?: ExtensionState
 	images?: string[]
@@ -57,6 +58,7 @@ export interface ExtensionState {
 	shouldShowAnnouncement: boolean
 	autoApprovalSettings: AutoApprovalSettings
 	modelOptions: ModelProvider[]
+	codeLensCommands: CodeLensCommand[]
 }
 
 export interface ClineMessage {

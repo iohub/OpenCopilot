@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './ChatInputToolBar.module.css';
 import DynamicTextArea from "react-textarea-autosize";
 import { CategoryOption, CategoryList } from '@sourcegraph/cody-shared/src/common/component';
-import { ExtensionState, getCurrentModelName } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState, getCurrentModelName } from '@sourcegraph/cody-shared/src/common/state'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
 import { DropdownMenu, DropdownButton } from './DropdownMenu';
 import dropdownStyles from './DropdownMenu.module.css';
@@ -43,7 +43,7 @@ const MODEL_CATEGORIES: CategoryList[] = [
   }
 ];
 
-function modelOptionsToCategories(extensionState?: ExtensionState): CategoryList[] {
+function modelOptionsToCategories(extensionState?: SharedState): CategoryList[] {
   if (!extensionState?.modelOptions) { return []; }
   const categoryMap = new Map<string, CategoryOption[]>();
   
@@ -72,7 +72,7 @@ function modelOptionsToCategories(extensionState?: ExtensionState): CategoryList
   return categories;
 }
 
-function systemPromptsToCategories(extensionState?: ExtensionState): CategoryList[] {
+function systemPromptsToCategories(extensionState?: SharedState): CategoryList[] {
   if (!extensionState?.systemPrompts) { return []; }
   const categoryMap = new Map<string, CategoryOption[]>();
   
@@ -102,7 +102,7 @@ function systemPromptsToCategories(extensionState?: ExtensionState): CategoryLis
 
 export const ChatInputToolBar: React.FC<{
   onChatSubmit?: (text: string) => void
-  extensionState?: ExtensionState
+  extensionState?: SharedState
   setShowPromptEditor?: (show: boolean) => void
   setShowModelSettings?: (show: boolean) => void
 }> = ({ onChatSubmit, extensionState, setShowPromptEditor, setShowModelSettings }) => {
