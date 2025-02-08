@@ -62,7 +62,7 @@
 
 .messageTemplate {
     width: 100%;
-    min-height: 200px;
+    min-height: 520px;
     padding: 12px;
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
@@ -281,7 +281,7 @@
 
 .dialogTextarea {
     width: 100%;
-    min-height: 120px;
+    min-height: 520px;
     padding: 12px;
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
