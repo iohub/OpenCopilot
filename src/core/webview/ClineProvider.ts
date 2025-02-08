@@ -567,14 +567,12 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						break
 					}
 					case "loadSystemPrompts": {
-						const systemPrompts = await this.loadSystemPrompts()
-						await this.updateGlobalState("systemPrompts", systemPrompts)
+						await this.loadSystemPrompts()
 						await this.postStateToWebview()
 						break
 					}
 					case "SaveSystemPrompts": {
 						if(message.text){
-							// console.log(`SaveSystemPrompts:\n${message.text}`)
 							await this.saveSystemPrompts(message.text)
 							await this.postStateToWebview()
 						}
@@ -1189,10 +1187,13 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		if (!(await this.fileExists(filePath))) {
 			await fs.writeFile(filePath, DEFAULT_SYSTEM_PROMPT_STR, "utf8")
 		}
-		return await JSON.parse(await fs.readFile(filePath, "utf8"))
+		const systemPrompts = JSON.parse(await fs.readFile(filePath, "utf8"))
+		this.updateGlobalState("systemPrompts", systemPrompts)
+		return systemPrompts
 	}
 
 	private async saveSystemPrompts(promptsJsonStr: string) {
+		await this.updateGlobalState("systemPrompts", JSON.parse(promptsJsonStr))
 		const dirPath = path.join(os.homedir(), ".ocopilot")
 		if (!(await this.fileExists(dirPath))) {
 			await fs.mkdir(dirPath, { recursive: true })
