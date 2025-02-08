@@ -7,11 +7,11 @@ import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/monokai.css'
 import 'codemirror/mode/javascript/javascript'
 import 'codemirror/mode/xml/xml'
-import { ExtensionState } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
 
 interface PromptEditorProps {
     onClose: () => void
-    clineState?: ExtensionState
+    sharedState?: SharedState
 }
 
 interface SystemPrompt {
@@ -26,7 +26,7 @@ interface PromptCategory {
     prompts: SystemPrompt[]
 }
 
-function systemPromptsToPromptCategory(extensionState?: ExtensionState): PromptCategory[] {
+function systemPromptsToPromptCategory(extensionState?: SharedState): PromptCategory[] {
     if (!extensionState?.systemPrompts) { 
         return [] 
     }
@@ -139,7 +139,7 @@ const AddCategoryDialog: React.FC<AddCategoryDialogProps> = ({ isOpen, onClose, 
     )
 }
 
-export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState }) => {
+export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, sharedState }) => {
     const [selectedCategory, setSelectedCategory] = useState<string>('')
     const [template, setTemplate] = useState<string>('')
     const [selectedPromptId, setSelectedPromptId] = useState<string>('')
@@ -169,16 +169,16 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, clineState 
 
     // 加载系统提示数据
     useEffect(() => {
-        const categories = systemPromptsToPromptCategory(clineState)
+        const categories = systemPromptsToPromptCategory(sharedState)
         setPromptCategories(categories)
         
         // 如果有当前选中的系统提示，设置相关状态
-        if (clineState?.systemPrompt) {
-            setSelectedCategory(clineState.systemPrompt.category)
-            setSelectedPromptId(clineState.systemPrompt.id)
-            setTemplate(clineState.systemPrompt.prompt)
+        if (sharedState?.systemPrompt) {
+            setSelectedCategory(sharedState.systemPrompt.category)
+            setSelectedPromptId(sharedState.systemPrompt.id)
+            setTemplate(sharedState.systemPrompt.prompt)
         }
-    }, [clineState])
+    }, [sharedState])
 
     // 当选择分类时更新提示列表
     const handleCategoryChange = (category: string) => {

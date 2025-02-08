@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react'
 import { VSCodeButton, VSCodeTextField, VSCodeDropdown, VSCodeOption } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
 import styles from './ModelSettings.module.css'
-import { ExtensionState, ProviderConfig } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState, ProviderConfig } from '@sourcegraph/cody-shared/src/common/state'
 
 interface ModelSettingsProps {
     onClose: () => void
-    clineState?: ExtensionState
+    sharedState?: SharedState
 }
 
 interface Provider {
@@ -18,7 +18,7 @@ interface Provider {
     category?: string
 }
 
-function modelOptionsToProviders(extensionState?: ExtensionState): Provider[] {
+function modelOptionsToProviders(extensionState?: SharedState): Provider[] {
     if (!extensionState?.modelOptions) { 
         return [] 
     }
@@ -29,36 +29,36 @@ function modelOptionsToProviders(extensionState?: ExtensionState): Provider[] {
         .sort((a, b) => a.order - b.order)
 }
 
-export const ModelSettings: React.FC<ModelSettingsProps> = ({ onClose, clineState }) => {
+export const ModelSettings: React.FC<ModelSettingsProps> = ({ onClose, sharedState }) => {
     // 使用 modelOptionsToProviders 初始化 providers
     const [providers, setProviders] = useState<Provider[]>(() => 
-        modelOptionsToProviders(clineState)
+        modelOptionsToProviders(sharedState)
     )
 
     const [modelConfig, setModelConfig] = useState<ProviderConfig>({
-        provider: clineState?.apiConfiguration?.apiProvider! ?? "deepseek",
-        model: clineState?.apiConfiguration?.providerConfig?.model ?? "deepseek-chat",
-        apiKey: clineState?.apiConfiguration?.providerConfig?.apiKey ?? "",
-        baseUrl: clineState?.apiConfiguration?.providerConfig?.baseUrl ?? ""
+        provider: sharedState?.apiConfiguration?.apiProvider! ?? "deepseek",
+        model: sharedState?.apiConfiguration?.providerConfig?.model ?? "deepseek-chat",
+        apiKey: sharedState?.apiConfiguration?.providerConfig?.apiKey ?? "",
+        baseUrl: sharedState?.apiConfiguration?.providerConfig?.baseUrl ?? ""
     })
 
-    // 添加监听 clineState 变化的 effect
+    // 添加监听 sharedState 变化的 effect
     useEffect(() => {
-        const newProviders = modelOptionsToProviders(clineState)
+        const newProviders = modelOptionsToProviders(sharedState)
         setProviders(newProviders)
         
-        // 更新 modelConfig 以反映最新的 clineState 配置
-        if (clineState?.apiConfiguration) {
+        // 更新 modelConfig 以反映最新的 sharedState 配置
+        if (sharedState?.apiConfiguration) {
             setModelConfig(prev => ({
                 ...prev,
                 // 保持当前 provider 如果它仍然有效，否则使用新的 provider
                 provider: newProviders.find(p => p.id === prev.provider) 
                     ? prev.provider 
-                    : (clineState.apiConfiguration?.apiProvider ?? "deepseek"),
+                    : (sharedState.apiConfiguration?.apiProvider ?? "deepseek"),
                 // 更新其他配置项
-                model: clineState?.apiConfiguration?.providerConfig?.model ?? "",
-                apiKey: clineState?.apiConfiguration?.providerConfig?.apiKey ?? "",
-                baseUrl: clineState?.apiConfiguration?.providerConfig?.baseUrl ?? ""
+                model: sharedState?.apiConfiguration?.providerConfig?.model ?? "",
+                apiKey: sharedState?.apiConfiguration?.providerConfig?.apiKey ?? "",
+                baseUrl: sharedState?.apiConfiguration?.providerConfig?.baseUrl ?? ""
             }))
         }
         
@@ -69,7 +69,7 @@ export const ModelSettings: React.FC<ModelSettingsProps> = ({ onClose, clineStat
                 provider: newProviders[0].id
             }))
         }
-    }, [clineState])
+    }, [sharedState])
 
     // 添加加载 provider 的 effect
     useEffect(() => {
@@ -147,28 +147,32 @@ export const ModelSettings: React.FC<ModelSettingsProps> = ({ onClose, clineStat
                         </VSCodeDropdown>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <div className={styles.labelWrapper}>
-                            <span className={styles.labelText}>Model</span>                 
-                        </div>
-                        <VSCodeTextField
-                            value={modelConfig.model}
-                            onChange={(e: any) => setModelConfig({...modelConfig, model: e.target.value})}
-                            placeholder="Enter the model name"
-                        />
-                    </div>
+                    {modelConfig.provider !== 'ollama' && (
+                        <>
+                            <div className={styles.formGroup}>
+                                <div className={styles.labelWrapper}>
+                                    <span className={styles.labelText}>Model</span>                 
+                                </div>
+                                <VSCodeTextField
+                                    value={modelConfig.model}
+                                    onChange={(e: any) => setModelConfig({...modelConfig, model: e.target.value})}
+                                    placeholder="Enter the model name"
+                                />
+                            </div>
 
-                    <div className={styles.formGroup}>
-                        <div className={styles.labelWrapper}>
-                            <span className={styles.labelText}>API key</span>
-                        </div>
-                        <VSCodeTextField 
-                            type="password"
-                            value={modelConfig.apiKey}
-                            onChange={(e: any) => setModelConfig({...modelConfig, apiKey: e.target.value})}
-                            placeholder="Enter your API key"
-                        />
-                    </div>
+                            <div className={styles.formGroup}>
+                                <div className={styles.labelWrapper}>
+                                    <span className={styles.labelText}>API key</span>
+                                </div>
+                                <VSCodeTextField 
+                                    type="password"
+                                    value={modelConfig.apiKey}
+                                    onChange={(e: any) => setModelConfig({...modelConfig, apiKey: e.target.value})}
+                                    placeholder="Enter your API key"
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div className={styles.formGroup}>
                         <div className={styles.labelWrapper}>

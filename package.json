@@ -2,7 +2,7 @@
 	"name": "ocopilot",
 	"displayName": "Open Copilot – Intelligent Assistant tailored for deepseek",
 	"description": "Customizable Copilot with DeepSeek/Ollama, such as: Customize Your Chatbot, Coding Assistant, Translator and more.",
-	"version": "3.1.17",
+	"version": "3.1.18",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -122,7 +122,7 @@
 				"ocopilot.autocomplete.enable": {
 					"type": "boolean",
 					"default": false,
-					"description": "Enable/disable Aline inline code completion feature"
+					"description": "Enable/Disable inline code completion"
 				}
 			}
 		}

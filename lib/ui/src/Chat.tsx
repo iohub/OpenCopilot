@@ -18,7 +18,7 @@ import { SystemPrompt } from '@sourcegraph/cody-shared/src/prompt/system-prompt'
 import { ChatInputToolBar } from './chat/ChatInputToolBar'
 
 import styles from './Chat.module.css'
-import { ExtensionState } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
 
 interface ChatProps extends ChatClassNames {
     transcript: ChatMessage[]
@@ -68,7 +68,7 @@ interface ChatProps extends ChatClassNames {
     chatModels?: ChatModelSelection[]
     EnhancedContextSettings?: React.FunctionComponent<{}>
     ChatModelDropdownMenu?: React.FunctionComponent<ChatModelDropdownMenuProps>
-    clineState?: ExtensionState
+    sharedState?: SharedState
     onCurrentChatModelChange?: (model: ChatModelSelection) => void
     setShowPromptEditor?: (show: boolean) => void
     setShowModelSettings?: (show: boolean) => void
@@ -221,7 +221,7 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
     chatModels,
     ChatModelDropdownMenu,
     EnhancedContextSettings,
-    clineState,
+    sharedState,
     onCurrentChatModelChange,
     setShowPromptEditor,
     setShowModelSettings,
@@ -605,7 +605,7 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
                     )}
                     <ChatInputToolBar
                         onChatSubmit={onChatSubmit}
-                        extensionState={clineState}
+                        extensionState={sharedState}
                         setShowPromptEditor={setShowPromptEditor}
                         setShowModelSettings={setShowModelSettings}
                     />

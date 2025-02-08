@@ -1,13 +1,30 @@
 import { SystemPrompt } from "../prompt/system-prompt"
-import { ModelProvider } from "./model"
 
-export interface ExtensionState {
+export interface CodeLensCommand {
+    id: string
+    title: string
+    tooltip: string
+    action: string
+    messageTemplate: string
+}
+
+export interface ModelProvider {
+    id: string
+    name: string
+    visible: boolean
+    order: number
+    status?: string
+    category: string
+}
+
+export interface SharedState {
 	version: string
 	uriScheme?: string
 	apiConfiguration?: ApiConfiguration
 	systemPrompts: SystemPrompt[]
 	systemPrompt: SystemPrompt
 	modelOptions: ModelProvider[]
+	codeLensCommands: CodeLensCommand[]
 }
 
 export interface ProviderConfig {
@@ -39,7 +56,7 @@ export function getSystemPromptNameByID(systemPrompts: SystemPrompt[], id: strin
     return prompt?.name || id;
 }
 
-export function getCurrentModelName(state: ExtensionState | undefined): string {
+export function getCurrentModelName(state: SharedState | undefined): string {
 	if (!state) {
 		return "";
 	}

@@ -39,7 +39,7 @@ import { UserContextSelectorComponent } from './UserContextSelector'
 import { VSCodeWrapper } from './utils/VSCodeApi'
 
 import styles from './Chat.module.css'
-import { ExtensionState } from '@sourcegraph/cody-shared/src/common/state'
+import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
 
 interface ChatboxProps {
     messageInProgress: ChatMessage | null
@@ -65,7 +65,7 @@ interface ChatboxProps {
     contextSelection?: ContextFile[] | null
     setChatModels?: (models: ChatModelSelection[]) => void
     chatModels?: ChatModelSelection[]
-    clineState?: ExtensionState
+    sharedState?: SharedState
     enableNewChatUI: boolean
     setShowPromptEditor?: (show: boolean) => void
     setShowModelSettings?: (show: boolean) => void
@@ -100,7 +100,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
     contextSelection,
     setChatModels,
     chatModels,
-    clineState,
+    sharedState,
     enableNewChatUI,
     setShowPromptEditor,
     setShowModelSettings,
@@ -275,7 +275,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
             chatModels={chatModels}
             onCurrentChatModelChange={onCurrentChatModelChange}
             ChatModelDropdownMenu={ChatModelDropdownMenu}
-            clineState={clineState}
+            sharedState={sharedState}
             EnhancedContextSettings={enableNewChatUI ? EnhancedContextSettings : undefined}
             setShowPromptEditor={setShowPromptEditor}
             setShowModelSettings={setShowModelSettings}
