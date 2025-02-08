@@ -40,7 +40,7 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 4px;
     width: 100%;
     box-sizing: border-box;
 }

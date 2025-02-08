@@ -43,28 +43,81 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-bottom: 0;
+    gap: 16px;
 }
 
 .section {
-    margin-bottom: 20px;
     width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 0 16px;
-}
-
-.section:last-child {
     margin-bottom: 0;
+    box-sizing: border-box;
 }
 
 .section label {
     display: block;
     margin-bottom: 8px;
+    color: var(--vscode-foreground);
+    font-size: 13px;
     font-weight: 500;
 }
 
-.select,
+.messageTemplate {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 4px;
+    resize: vertical;
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+.messageTemplate:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
+.messageTemplate::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}
+
+.select {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--vscode-dropdown-background);
+    color: var(--vscode-dropdown-foreground);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+}
+
+.select:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
+.select:hover:not(:disabled) {
+    background-color: var(--vscode-dropdown-listBackground);
+}
+
+.select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.select option {
+    background-color: var(--vscode-dropdown-background);
+    color: var(--vscode-dropdown-foreground);
+    padding: 8px;
+}
+
 .input,
 .textarea {
     width: 100%;
@@ -228,13 +281,27 @@
 
 .dialogTextarea {
     width: 100%;
-    min-height: 100px;
-    padding: 8px;
-    border: 1px solid var(--vscode-input-border);
-    background: var(--vscode-input-background);
+    min-height: 120px;
+    padding: 12px;
+    background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
     border-radius: 4px;
     resize: vertical;
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+.dialogTextarea:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
+.dialogTextarea::placeholder {
+    color: var(--vscode-input-placeholderForeground);
 }
 
 .dialogFooter {

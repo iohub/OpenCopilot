@@ -2,11 +2,6 @@ import React, { useState, useEffect } from 'react'
 import styles from './PromptEditor.module.css'
 import { VSCodeButton, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
-import { Controlled as CodeMirror } from 'react-codemirror2'
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/theme/monokai.css'
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/mode/xml/xml'
 import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
 
 interface PromptEditorProps {
@@ -83,17 +78,17 @@ const AddPromptDialog: React.FC<AddPromptDialogProps> = ({ isOpen, category, onC
                     <VSCodeTextField
                         value={name}
                         onChange={e => setName((e.target as HTMLInputElement).value)}
-                        placeholder="Template name"
+                        placeholder="name"
                     />
                     <VSCodeTextField
                         value={categoryName}
                         onChange={e => setCategoryName((e.target as HTMLInputElement).value)}
-                        placeholder="Category name"
+                        placeholder="category"
                     />
                     <textarea
                         value={prompt}
                         onChange={e => setPrompt(e.target.value)}
-                        placeholder="Prompt content"
+                        placeholder="prompt content"
                         className={styles.dialogTextarea}
                     />
                 </div>
@@ -146,26 +141,6 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, sharedState
     const [promptCategories, setPromptCategories] = useState<PromptCategory[]>([])
     const [isAddPromptOpen, setIsAddPromptOpen] = useState(false)
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
-
-    // CodeMirror options
-    const cmOptions = {
-        mode: 'yaml',
-        theme: 'monokai',
-        lineNumbers: false,
-        lineWrapping: true,
-        indentUnit: 2,
-        tabSize: 2,
-        autofocus: true,
-        extraKeys: {
-            'Tab': (cm: any) => {
-                if (cm.somethingSelected()) {
-                    cm.indentSelection('add')
-                } else {
-                    cm.replaceSelection('  ', 'end')
-                }
-            }
-        }
-    }
 
     // 加载系统提示数据
     useEffect(() => {
@@ -375,20 +350,13 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, sharedState
                         </select>
                     </div>
 
-                </div>
-
-                <div className={styles.section}>
-                    <label>Prompt Template</label>
-                    <div className={styles.editorWrapper}>
-                        <CodeMirror
+                    <div className={styles.section}>
+                        <textarea
                             value={template}
-                            options={{
-                                ...cmOptions,
-                                mode: 'javascript'
-                            }}
-                            onBeforeChange={(editor, data, value) => {
-                                setTemplate(value)
-                            }}
+                            onChange={e => setTemplate(e.target.value)}
+                            className={styles.messageTemplate}
+                            placeholder="Enter prompt template..."
+                            rows={8}
                         />
                     </div>
                 </div>

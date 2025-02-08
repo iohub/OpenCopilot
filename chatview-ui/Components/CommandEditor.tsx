@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react'
 import styles from './CommandEditor.module.css'
 import { VSCodeButton, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
-import { Controlled as CodeMirror } from 'react-codemirror2'
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/theme/monokai.css'
-import 'codemirror/mode/javascript/javascript'
 import { CodeLensCommand } from '@sourcegraph/cody-shared/src/common/state'
 
 interface CommandEditorProps {
@@ -88,16 +84,6 @@ export const CommandEditor: React.FC<CommandEditorProps> = ({ onClose, commands 
     const [commandList, setCommandList] = useState<CodeLensCommand[]>(Array.isArray(commands) ? commands : [])
     const [messageTemplate, setMessageTemplate] = useState('')
     const [isAddCommandOpen, setIsAddCommandOpen] = useState(false)
-
-    const cmOptions = {
-        mode: 'javascript',
-        theme: 'monokai',
-        lineNumbers: false,
-        lineWrapping: true,
-        indentUnit: 2,
-        tabSize: 2,
-        autofocus: true
-    }
 
     useEffect(() => {
         if (Array.isArray(commands) && commands.length > 0) {
@@ -191,16 +177,13 @@ export const CommandEditor: React.FC<CommandEditorProps> = ({ onClose, commands 
                     </div>
 
                     <div className={styles.section}>
-                        <label>Message Template</label>
-                        <div className={styles.editorWrapper}>
-                            <CodeMirror
-                                value={messageTemplate}
-                                options={cmOptions}
-                                onBeforeChange={(editor, data, value) => {
-                                    setMessageTemplate(value)
-                                }}
-                            />
-                        </div>
+                        <textarea
+                            value={messageTemplate}
+                            onChange={e => setMessageTemplate(e.target.value)}
+                            className={styles.messageTemplate}
+                            placeholder="Enter message template..."
+                            rows={8}
+                        />
                     </div>
                 </div>
 
