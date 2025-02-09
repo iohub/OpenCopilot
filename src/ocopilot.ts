@@ -25,6 +25,7 @@ export async function ocopilotActivate(context: vscode.ExtensionContext, sidebar
     // Register edit config command
     context.subscriptions.push(
         vscode.commands.registerCommand('ocopilot.editCodeLensConfig', async () => {
+            await vscode.commands.executeCommand('workbench.view.extension.ocopilot-dev-ActivityBar')
             await sidebarProvider.postMessageToWebview({ type: "action", action: "show-command-editor" })
         })
     )
@@ -65,6 +66,9 @@ export async function ocopilotActivate(context: vscode.ExtensionContext, sidebar
 			action: string,
 			messageTemplate: string
 		}) => {
+			// Show the sidebar view directly
+			await vscode.commands.executeCommand('workbench.view.extension.ocopilot-dev-ActivityBar')
+
 			const code = args.document.getText(args.range)
 			const fileName = path.basename(args.document.fileName)
 			
