@@ -3,17 +3,11 @@ import styles from './PromptEditor.module.css'
 import { VSCodeButton, VSCodeTextField } from '@vscode/webview-ui-toolkit/react'
 import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
 import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
+import { SystemPrompt } from '@sourcegraph/cody-shared/src/prompt/system-prompt'
 
 interface PromptEditorProps {
     onClose: () => void
     sharedState?: SharedState
-}
-
-interface SystemPrompt {
-    id: string
-    name: string
-    prompt: string
-    category: string
 }
 
 interface PromptCategory {
@@ -142,18 +136,15 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, sharedState
     const [isAddPromptOpen, setIsAddPromptOpen] = useState(false)
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
 
-    // 加载系统提示数据
+    // 修改 useEffect，添加 sharedState 依赖
     useEffect(() => {
+        // 每当 sharedState 更新时，重新加载数据
         const categories = systemPromptsToPromptCategory(sharedState)
         setPromptCategories(categories)
-        
-        // 如果有当前选中的系统提示，设置相关状态
-        if (sharedState?.systemPrompt) {
-            setSelectedCategory(sharedState.systemPrompt.category)
-            setSelectedPromptId(sharedState.systemPrompt.id)
-            setTemplate(sharedState.systemPrompt.prompt)
-        }
-    }, [sharedState])
+        setSelectedCategory('')
+        setSelectedPromptId('')
+        setTemplate('')
+    }, [sharedState?.systemPrompts])
 
     // 当选择分类时更新提示列表
     const handleCategoryChange = (category: string) => {
@@ -187,34 +178,25 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({ onClose, sharedState
     const handleSave = () => {
         // 如果有选中的prompt且内容有变化
         if (selectedPromptId && template) {
-            setPromptCategories(prevCategories => {
-                const newCategories = prevCategories.map(cat => {
-                    const updatedPrompts = cat.prompts.map(p => {
-                        if (p.id === selectedPromptId) {
-                            return {
-                                ...p,
-                                prompt: template
-                            }
-                        }
-                        return p
-                    })
-                    return {
-                        ...cat,
-                        prompts: updatedPrompts
-                    }
-                })
-
-                // 发送更新后的数据
-                const systemPrompts = promptCategoryToSystemPrompts(newCategories)
-                getVSCodeAPI().postMessage({
-                    type: 'SaveSystemPrompts',
-                    text: JSON.stringify(systemPrompts, null, 2)
-                })
-
-                return newCategories
+            const newCategories = promptCategories.map(cat => ({
+                ...cat,
+                prompts: cat.prompts.map(p => 
+                    p.id === selectedPromptId 
+                        ? { ...p, prompt: template }
+                        : p
+                )
+            }))
+            setPromptCategories(newCategories)
+            const systemPrompts = promptCategoryToSystemPrompts(newCategories)
+            getVSCodeAPI().postMessage({
+                type: 'SaveSystemPrompts',
+                text: JSON.stringify(systemPrompts, null, 2)
             })
         }
-
+        
+        // 清空选择
+        setSelectedPromptId('')
+        setTemplate('')
         onClose()
     }
 
