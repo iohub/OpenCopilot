@@ -391,7 +391,10 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						// Could also do this in extension .ts
 						//this.postMessageToWebview({ type: "text", text: `Extension: ${Date.now()}` })
 						// initializing new instance of Cline will make sure that any agentically running promises in old instance don't affect our new task. this essentially creates a fresh slate for the new task
-						await this.initClineWithTask(message.text, message.images)
+						// get vscode selected text
+						const selectedText = vscode.window.activeTextEditor?.document.getText(vscode.window.activeTextEditor?.selection)
+						const taskText = selectedText ? `${message.text}\n## Selected text\n ${selectedText}` : message.text
+						await this.initClineWithTask(taskText, message.images)
 						if (!this.cline?.inClineBuiltinMode()) {
 							await this.switchToChatView()
 						}
