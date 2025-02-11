@@ -40,6 +40,7 @@ import { VSCodeWrapper } from './utils/VSCodeApi'
 
 import styles from './Chat.module.css'
 import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
+import { ActiveTextEditorSelection } from '@sourcegraph/cody-shared/src/editor';
 
 interface ChatboxProps {
     messageInProgress: ChatMessage | null
@@ -69,6 +70,7 @@ interface ChatboxProps {
     enableNewChatUI: boolean
     setShowPromptEditor?: (show: boolean) => void
     setShowModelSettings?: (show: boolean) => void
+    editorSelection?: ActiveTextEditorSelection | null
 }
 
 export interface ChatUISubmitButtonProps {
@@ -104,6 +106,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
     enableNewChatUI,
     setShowPromptEditor,
     setShowModelSettings,
+    editorSelection,
 }) => {
     const [abortMessageInProgressInternal, setAbortMessageInProgress] = useState<() => void>(() => () => undefined)
 
@@ -279,6 +282,7 @@ export const Chat: React.FunctionComponent<React.PropsWithChildren<ChatboxProps>
             EnhancedContextSettings={enableNewChatUI ? EnhancedContextSettings : undefined}
             setShowPromptEditor={setShowPromptEditor}
             setShowModelSettings={setShowModelSettings}
+            editorSelection={editorSelection}
         />
     )
 }

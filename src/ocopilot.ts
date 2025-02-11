@@ -57,6 +57,42 @@ export async function ocopilotActivate(context: vscode.ExtensionContext, sidebar
         })
     )
 
+    // Add selection change listener
+    context.subscriptions.push(
+        vscode.window.onDidChangeTextEditorSelection(event => {
+            const editor = event.textEditor
+            if (editor) {
+                if (editor.selection.isEmpty) {
+                    // Send null when selection is cleared
+                    sidebarProvider.postMessageToWebview({ 
+                        type: "action", 
+                        action: "cancel-selection"
+                    })
+                } else {
+                    const selectedText = editor.document.getText(editor.selection)
+                    const fileName = path.basename(editor.document.fileName)
+                    
+                    // Send selection info to webview
+                    sidebarProvider.postMessageToWebview({ 
+                        type: "action", 
+                        action: "selection-text",
+                        selectedFile: {
+                            filename: fileName,
+                            start: {
+                                line: editor.selection.start.line,
+                                character: editor.selection.start.character
+                            },
+                            end: {
+                                line: editor.selection.end.line, 
+                                character: editor.selection.end.character
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    )
+
 	// Register command handler
 	context.subscriptions.push(
 		vscode.commands.registerCommand('ocopilot.executeCodelenCommand', async (args: {

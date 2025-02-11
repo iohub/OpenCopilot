@@ -7,6 +7,7 @@
 > * 💎 Native DeepSeek Integration
 > * 🚀 Instant API Provider Switching
 > * 🧪 Customizable codelen commands
+> * 📌 Ask about the selected text
 
 > ### ✨ Supported Models ✨ <br>
 > * 💎 DeepSeek

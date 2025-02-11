@@ -112,4 +112,45 @@
     pointer-events: none;
     user-select: none;
 }
+
+.fileLocationTag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 3px;
+    margin: 8px 8px 4px 8px;
+    font-size: 12px;
+    color: var(--vscode-foreground);
+    width: fit-content;
+}
+
+.fileLocationTag i {
+    font-size: 14px;
+    margin-right: 2px;
+    opacity: 0.8;
+}
+
+.fileName {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--vscode-editor-foreground);
+}
+
+.selectionRange {
+    opacity: 0.7;
+}
+
+.separator {
+    color: var(--vscode-input-foreground);
+    opacity: 0.4;
+    margin: 0 2px;
+}
+
+.repoName {
+    color: var(--vscode-textLink-foreground);
+}
   
