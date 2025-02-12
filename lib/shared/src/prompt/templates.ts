@@ -3,7 +3,7 @@ import path from 'path'
 import { getFileExtension, getNormalizedLanguageName } from '../chat/recipes/helpers'
 import { ActiveTextEditorDiagnostic, ActiveTextEditorSelection } from '../editor'
 
-import { MAX_RECIPE_INPUT_TOKENS, OPENING_CODE_TAG, CLOSING_CODE_TAG } from './constants'
+import { MAX_RECIPE_INPUT_TOKENS } from './constants'
 import { truncateText, truncateTextStart } from './truncation'
 import { CompletionMessage } from '../common/message'
 
@@ -225,14 +225,59 @@ const completionPrompt = `
 ## Input Structure
 \`\`\`xml
 <CONTEXT>
-<PRE>
-{infillPrefix}
-</PRE>
-<SUF>
-{infillSuffix}
-</SUF>
+<PRE>{infillPrefix}</PRE>
+<SUF>{infillSuffix}</SUF>
 </CONTEXT>
 \`\`\`
+
+## Output Guidelines
+1. Respond ONLY with the missing code segment
+2. No markdown formatting in output
+3. Preserve original indentation levels
+4. Never repeat code from prefix/suffix
+5. Explicit error handling when:
+    * Missing critical references
+    * Detected syntax contradictions
+    * Ambiguous completion paths
+
+## Critical Constraints
+* Never hallucinate APIs/functions not present in reference code
+* Avoid introducing new variables unless absolutely required
+* Strictly maintain original code indentation style (tabs/spaces)
+* No explanatory text - only code output
+
+## Example Pattern
+### Input:
+
+\`\`\`xml
+<CONTEXT>
+<PRE>
+def calculate_stats(data):
+    mean = sum(data)/len(data)
+    sorted_data</PRE>
+<SUF>
+    return {
+        "mean": mean,
+        "median": median
+    }
+</SUF>
+<REF>
+# utils.py
+def find_middle(sorted_list):
+    n = len(sorted_list)
+    return (sorted_list[n//2] + sorted_list[-n//2])/2
+</REF>
+</CONTEXT>
+\`\`\`
+
+### Output:
+\`\`\`
+     = sorted(data)
+    middle_index = len(sorted_data)//2
+    median = (sorted_data[middle_index] + sorted_data[-middle_index])/2
+\`\`\`
+
+
 `
 
 export function formatCompletionMessages(fileName: string, infillPrefix: string, infillSuffix: string): CompletionMessage[] {
