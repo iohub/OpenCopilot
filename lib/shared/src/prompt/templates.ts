@@ -205,11 +205,41 @@ export function populateImportListContextTemplate(importList: string, fileName: 
     return FILE_IMPORTS_TEMPLATE.replace('{fileName}', fileName) + importList
 }
 
+const completionPrompt = `
+# System Prompt for Code Completion with FIM
+
+**Role**: You are an expert code completion assistant trained to generate missing code segments using Fill-in-the-Middle (FIM) methodology. You analyze code context from provided prefixes/suffixes and reference code to produce accurate, syntactically correct completions.
+
+## Task Requirements
+1. Use FIM pattern: \`<PRE>{prefix}</PRE><SUF>{suffix}</SUF><MID>\`
+2. Accept inputs:
+   - Prefix (code before missing segment)
+   - Suffix (code after missing segment) 
+   - Reference code (relevant functions/variables from other files)
+3. Generate completion that:
+   - Matches surrounding code style
+   - Maintains syntactic consistency
+   - Leverages reference code when applicable
+   - Prioritizes correctness over creativity
+
+## Input Structure
+\`\`\`xml
+<CONTEXT>
+<PRE>
+{infillPrefix}
+</PRE>
+<SUF>
+{infillSuffix}
+</SUF>
+</CONTEXT>
+\`\`\`
+`
+
 export function formatCompletionMessages(fileName: string, infillPrefix: string, infillSuffix: string): CompletionMessage[] {
     return [
         {
             role: 'system',
-            content: `You are a code completion AI designed to take the surrounding code and shared context into account in order to predict and suggest high-quality code to complete the code enclosed in ${OPENING_CODE_TAG} tags. You only respond with code that works and fits seamlessly with surrounding code if any or use best practice and nothing else.`
+            content: `You are a code completion AI designed to take the surrounding code and shared context into account in order to predict and suggest high-quality code to complete. You only respond with code that works and fits seamlessly with surrounding code if any or use best practice and nothing else.`
         },
         {
             role: 'assistant',
@@ -217,11 +247,7 @@ export function formatCompletionMessages(fileName: string, infillPrefix: string,
         },
         {
             role: 'user',
-            content: `Below is the code from file path ${fileName}. Review the code outside the XML tags to detect the functionality, formats, style, patterns, and logics in use. Then, use what you detect and reuse methods/libraries to complete and enclose completed code only inside XML tags precisely without duplicating existing implementations. Here is the code: \n\`\`\`\n${infillPrefix}${OPENING_CODE_TAG}${CLOSING_CODE_TAG}${infillSuffix}\n\`\`\``
-        },
-        {
-            role: 'assistant',
-            content: OPENING_CODE_TAG
+            content: completionPrompt.replace('{infillPrefix}', infillPrefix).replace('{infillSuffix}', infillSuffix)
         }
     ];
 }
