@@ -7,6 +7,7 @@ import { getVSCodeAPI } from '@sourcegraph/cody-shared/src/common/VSCodeApi'
 import { DropdownMenu, DropdownButton } from './DropdownMenu';
 import dropdownStyles from './DropdownMenu.module.css';
 import styled from 'styled-components';
+import { ActiveTextEditorSelection } from '@sourcegraph/cody-shared/src/editor';
 
 const MODEL_CATEGORIES: CategoryList[] = [
   {
@@ -105,7 +106,8 @@ export const ChatInputToolBar: React.FC<{
   extensionState?: SharedState
   setShowPromptEditor?: (show: boolean) => void
   setShowModelSettings?: (show: boolean) => void
-}> = ({ onChatSubmit, extensionState, setShowPromptEditor, setShowModelSettings }) => {
+  editorSelection?: ActiveTextEditorSelection
+}> = ({ onChatSubmit, extensionState, setShowPromptEditor, setShowModelSettings, editorSelection }) => {
   const [inputValue, setInputValue] = useState('');
   const modelCategory = modelOptionsToCategories(extensionState);
   const promptCategory = systemPromptsToCategories(extensionState);
@@ -199,8 +201,25 @@ export const ChatInputToolBar: React.FC<{
     })
   }, []) // 空依赖数组确保只在组件挂载时执行一次
 
+  const getSelectionRangeText = () => {
+    if (!editorSelection?.selectionRange) return '';
+    const start = editorSelection.selectionRange.start.line + 1;
+    const end = editorSelection.selectionRange.end.line + 1;
+    return `(${start}-${end})`;
+  };
+
   return (
     <div className={styles.container}>
+      {editorSelection?.fileName && editorSelection?.selectionRange && (
+        <div className={styles.fileLocationTag}>
+          <i className="codicon codicon-file-code" />
+          <span className={styles.fileName}>
+            {editorSelection.fileName}
+            <span className={styles.selectionRange}>{getSelectionRangeText()}</span>
+          </span>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.inputContainer}>
           <DynamicTextArea

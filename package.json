@@ -2,7 +2,7 @@
 	"name": "ocopilot",
 	"displayName": "Open Copilot – Intelligent Assistant tailored for deepseek",
 	"description": "Customizable Copilot with DeepSeek/Ollama, such as: Customize Your Chatbot, Coding Assistant, Translator and more.",
-	"version": "3.1.22",
+	"version": "3.1.24",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",

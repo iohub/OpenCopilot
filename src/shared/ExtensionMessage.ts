@@ -34,6 +34,8 @@ export interface ExtensionMessage {
 		| "didBecomeVisible"
 		| "clear-transcripts"
 		| "show-command-editor"
+		| "selection-text"
+		| "cancel-selection"
 	invoke?: "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
 	state?: ExtensionState
 	images?: string[]
@@ -44,6 +46,17 @@ export interface ExtensionMessage {
 	openRouterModels?: Record<string, ModelInfo>
 	mcpServers?: McpServer[]
 	transcript?: ChatMessage[]
+	selectedFile?: {
+		filename: string
+		start: {
+			line: number
+			character: number
+		}
+		end: {
+			line: number
+			character: number
+		}
+	}
 }
 
 export interface ExtensionState {

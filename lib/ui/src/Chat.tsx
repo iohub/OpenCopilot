@@ -19,6 +19,7 @@ import { ChatInputToolBar } from './chat/ChatInputToolBar'
 
 import styles from './Chat.module.css'
 import { SharedState } from '@sourcegraph/cody-shared/src/common/state'
+import { ActiveTextEditorSelection } from '@sourcegraph/cody-shared/src/editor';
 
 interface ChatProps extends ChatClassNames {
     transcript: ChatMessage[]
@@ -72,6 +73,7 @@ interface ChatProps extends ChatClassNames {
     onCurrentChatModelChange?: (model: ChatModelSelection) => void
     setShowPromptEditor?: (show: boolean) => void
     setShowModelSettings?: (show: boolean) => void
+    editorSelection: ActiveTextEditorSelection
 }
 
 interface ChatClassNames extends TranscriptItemClassNames {
@@ -225,6 +227,8 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
     onCurrentChatModelChange,
     setShowPromptEditor,
     setShowModelSettings,
+    editorSelection,
+
 }) => {
     const [inputRows, setInputRows] = useState(1)
     const [displayCommands, setDisplayCommands] = useState<[string, CodyPrompt & { instruction?: string }][] | null>(
@@ -236,7 +240,6 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
     // The context files added via the chat input by user
     const [chatContextFiles, setChatContextFiles] = useState<Map<string, ContextFile>>(new Map([]))
     const [selectedChatContext, setSelectedChatContext] = useState(0)
-
     /**
      * Callback function called when a chat context file is selected from the context selector.
      *
@@ -608,6 +611,7 @@ export const Chat: React.FunctionComponent<ChatProps> = ({
                         extensionState={sharedState}
                         setShowPromptEditor={setShowPromptEditor}
                         setShowModelSettings={setShowModelSettings}
+                        editorSelection={editorSelection}
                     />
                 </div>
                 {!EnhancedContextSettings && ContextStatusComponent && (

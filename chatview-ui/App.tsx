@@ -28,6 +28,7 @@ import type { VSCodeWrapper } from './utils/VSCodeApi'
 import { ModelSettings } from './ModelSettings'
 import { PromptEditor } from './Components/PromptEditor'
 import { CommandEditor } from './Components/CommandEditor'
+import { ActiveTextEditorSelection } from '@sourcegraph/cody-shared/src/editor';
 
 export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vscodeAPI }) => {
 
@@ -86,6 +87,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
     const [showPromptEditor, setShowPromptEditor] = useState(false)
     const [showModelSettings, setShowModelSettings] = useState(false)
     const [showCommandEditor, setShowCommandEditor] = useState(false)
+    const [editorSelection , setEditorSelection] = useState<ActiveTextEditorSelection | null>(null)
 
     const onConsentToEmbeddings = useCallback((): void => {
         vscodeAPI.postMessage({ command: 'embeddings/index' })
@@ -184,13 +186,24 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                     case 'action': {
                         if (message.action === 'settingsButtonClicked') {
                             setView('settings')
-                        }
-                        if (message.action === 'clear-transcripts') {
+                        } else if (message.action === 'clear-transcripts') {
                             setTranscript([])
                             setMessageInProgress(null)
-                        }
-                        if (message.action === 'show-command-editor') {
+                        } else if (message.action === 'show-command-editor') {
                             setShowCommandEditor(true)
+                        } else if (message.action === 'selection-text') {
+                            setEditorSelection({
+                                fileName: message.selectedFile.filename,
+                                selectionRange: {
+                                    start: message.selectedFile.start,
+                                    end: message.selectedFile.end
+                                },
+                                precedingText:"",
+                                selectedText: "",
+                                followingText: ""
+                            })
+                        } else if (message.action === 'cancel-selection') {
+                            setEditorSelection(null)
                         }
                         break
                     }
@@ -331,6 +344,7 @@ export const App: React.FunctionComponent<{ vscodeAPI: VSCodeWrapper }> = ({ vsc
                                         setShowPromptEditor={setShowPromptEditor}
                                         setShowModelSettings={setShowModelSettings}
                                         setShowCommandEditor={setShowCommandEditor}
+                                        editorSelection={editorSelection}
                                     />
                                 </EnhancedContextEnabled.Provider>
                             </EnhancedContextContext.Provider>
