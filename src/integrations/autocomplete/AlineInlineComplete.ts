@@ -63,9 +63,7 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
         const linePrefix = document.lineAt(position).text.substring(0, position.character)
 
         // Don't trigger completion if line is empty or only whitespace
-        if (!linePrefix.trim()) {
-            return null
-        }
+        if (!linePrefix.trim()) { return null }
 
         try {
             const { prefixContext, prefixCode, suffixCode, suffixContext } = this.parseCodeContext(document, position)
@@ -85,11 +83,9 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
                 .replace(/\n?```$/, '')       // Remove closing code fence
                 .replace(CLOSING_CODE_TAG, '').replace(OPENING_CODE_TAG, '')
 
-            if (!cleanedCompletion) {
-                return null
-            }
+            if (!cleanedCompletion) { return null }
 
-            cleanedCompletion = formatCompletionText(suffixCode, cleanedCompletion)
+            // cleanedCompletion = formatCompletionText(suffixCode, cleanedCompletion)
             console.log(`cleanedCompletion: ${cleanedCompletion}`)
 
             // Create and return completion item

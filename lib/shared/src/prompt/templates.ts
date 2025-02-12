@@ -233,12 +233,16 @@ const completionPrompt = `
 ## Output Guidelines
 1. Respond ONLY with the missing code segment
 2. No markdown formatting in output
-3. Preserve original indentation levels
-4. Never repeat code from prefix/suffix
-5. Explicit error handling when:
-    * Missing critical references
-    * Detected syntax contradictions
-    * Ambiguous completion paths
+3. Never repeat code from prefix/suffix
+4. Explicit error handling when:
+    - Missing critical references
+    - Detected syntax contradictions
+    - Ambiguous completion paths
+5. Indentation Formatting:
+    - Auto-detect indentation style from prefix (tabs/2-space/4-space)
+    - Maintain exact column alignment
+    - Fix inconsistent indentation in generated code
+    - Never mix tabs and spaces
 
 ## Critical Constraints
 * Never hallucinate APIs/functions not present in reference code
