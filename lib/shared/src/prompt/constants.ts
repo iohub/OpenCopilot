@@ -17,5 +17,5 @@ export function tokensToChars(tokens: number): number {
     return tokens * CHARS_PER_TOKEN
 }
 
-export const OPENING_CODE_TAG = "<CODE_60a77e>";
-export const CLOSING_CODE_TAG = "</CODE_60a77e>";
+export const OPENING_CODE_TAG = "<MID>";
+export const CLOSING_CODE_TAG = "</MID>";
