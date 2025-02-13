@@ -5,6 +5,7 @@ import { js_beautify } from 'js-beautify'
 import { GlobalParser } from '../../services/tree-sitter/ocopilotParser'
 import { formatCompletionMessages } from '@sourcegraph/cody-shared/src/prompt/templates'
 import { OPENING_CODE_TAG, CLOSING_CODE_TAG } from '@sourcegraph/cody-shared/src/prompt/constants'
+import { debounce, DebouncedFunc } from 'lodash'
 
 interface CompletionContext {
     prefixContext: string
@@ -14,8 +15,54 @@ interface CompletionContext {
 }
 
 export class AlineInlineComplete implements vscode.InlineCompletionItemProvider {
-    constructor(private readonly configuration: ApiConfiguration) { }
+    private readonly debouncedComplete: DebouncedFunc<
+        (
+            document: vscode.TextDocument,
+            position: vscode.Position,
+            prefixContext: string,
+            prefixCode: string,
+            suffixCode: string,
+            suffixContext: string
+        ) => Promise<string | null>
+    >
 
+    constructor(private readonly configuration: ApiConfiguration) {
+        // Initialize debounced completion function
+        this.debouncedComplete = debounce(
+            async (
+                document: vscode.TextDocument,
+                position: vscode.Position,
+                prefixContext: string,
+                prefixCode: string,
+                suffixCode: string,
+                suffixContext: string
+            ): Promise<string | null> => {
+                try {
+                    const messages = formatCompletionMessages(document.fileName, prefixContext+'\n'+prefixCode, suffixCode+'\n'+suffixContext)
+                    console.log(`completion content:\n\n ${messages.map(message => message.content).join('\n')}`)
+                    const systemPrompt = messages.shift()?.content
+                    const apiHandler = buildApiHandler(this.configuration)
+                    const completion = await apiHandler.completeMessage(
+                        systemPrompt!,
+                        messages
+                    )
+                    console.log(`completion: ${completion}`)
+                    
+                    let cleanedCompletion = completion
+                        .trim()
+                        .replace(/^```[\w-]*\n?/, '')
+                        .replace(/\n?```$/, '')
+                        .replace(CLOSING_CODE_TAG, '').replace(OPENING_CODE_TAG, '')
+
+                    return cleanedCompletion || null
+                } catch (error) {
+                    console.error('Inline completion error:', error)
+                    return null
+                }
+            },
+            800  // 400ms debounce delay
+        )
+    }
 
     private parseCodeContext(document: vscode.TextDocument, position: vscode.Position): CompletionContext {
         const fileExt = document.fileName.split('.').pop()!
@@ -67,25 +114,19 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
 
         try {
             const { prefixContext, prefixCode, suffixCode, suffixContext } = this.parseCodeContext(document, position)
-            const messages = formatCompletionMessages(document.fileName, prefixContext+'\n'+prefixCode, suffixCode+'\n'+suffixContext)
-            console.log(`completion content:\n\n ${messages.map(message => message.content).join('\n')}`)
-            const systemPrompt = messages.shift()?.content
-            const apiHandler = buildApiHandler(this.configuration)
-            const completion = await apiHandler.completeMessage(
-                systemPrompt!,
-                messages
+            
+            // Use debounced completion function
+            const cleanedCompletion = await this.debouncedComplete(
+                document,
+                position,
+                prefixContext,
+                prefixCode,
+                suffixCode,
+                suffixContext
             )
-            console.log(`completion: ${completion}`)
-            // Clean up completion text
-            let cleanedCompletion = completion
-                .trim()
-                .replace(/^```[\w-]*\n?/, '') // Remove opening code fence
-                .replace(/\n?```$/, '')       // Remove closing code fence
-                .replace(CLOSING_CODE_TAG, '').replace(OPENING_CODE_TAG, '')
 
             if (!cleanedCompletion) { return null }
 
-            // cleanedCompletion = formatCompletionText(suffixCode, cleanedCompletion)
             console.log(`cleanedCompletion: ${cleanedCompletion}`)
 
             // Create and return completion item
