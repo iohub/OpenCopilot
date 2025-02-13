@@ -210,7 +210,7 @@ const completionPrompt = `
 **Role**: You are an expert code completion assistant trained to generate missing code segments using Fill-in-the-Middle (FIM) methodology. You analyze code context from provided prefixes/suffixes and reference code to produce accurate, syntactically correct completions.
 
 ## Task Requirements
-1. Use FIM pattern: \`<PRE>{prefix}</PRE><SUF>{suffix}</SUF><MID>\`
+1. Use FIM pattern: \`<PRE>{prefix}</PRE><SUF>{suffix}</SUF><MID>{completion}</MID>\`
 2. Accept inputs:
    - Prefix (code before missing segment)
    - Suffix (code after missing segment) 
@@ -225,7 +225,6 @@ const completionPrompt = `
 ### Input:
 
 \`\`\`xml
-<CONTEXT>
 <PRE>
 def calculate_stats(data):
     mean = sum(data)/len(data)
@@ -236,20 +235,14 @@ def calculate_stats(data):
         "median": median
     }
 </SUF>
-<REF>
-# utils.py
-def find_middle(sorted_list):
-    n = len(sorted_list)
-    return (sorted_list[n//2] + sorted_list[-n//2])/2
-</REF>
-</CONTEXT>
+<MID>
 \`\`\`
 
 ### Output:
 \`\`\`
-     = sorted(data)
+ = sorted(data)
     middle_index = len(sorted_data)//2
-    median = (sorted_data[middle_index] + sorted_data[-middle_index])/2
+    median = (sorted_data[middle_index] + sorted_data[-middle_index])/2</MID>
 \`\`\`
 
 ## Output Guidelines
@@ -274,10 +267,8 @@ def find_middle(sorted_list):
 
 ## User Input
 \`\`\`xml
-<CONTEXT>
 <PRE>{infillPrefix}</PRE>
-<SUF>{infillSuffix}</SUF>
-</CONTEXT>
+<SUF>{infillSuffix}</SUF><MID>
 \`\`\`
 
 ### Output:
