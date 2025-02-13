@@ -15,6 +15,8 @@ interface CompletionContext {
 }
 
 export class AlineInlineComplete implements vscode.InlineCompletionItemProvider {
+    private currentController: AbortController | null = null
+    
     private readonly debouncedComplete: DebouncedFunc<
         (
             document: vscode.TextDocument,
@@ -22,12 +24,12 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
             prefixContext: string,
             prefixCode: string,
             suffixCode: string,
-            suffixContext: string
+            suffixContext: string,
+            controller: AbortController
         ) => Promise<string | null>
     >
 
     constructor(private readonly configuration: ApiConfiguration) {
-        // Initialize debounced completion function
         this.debouncedComplete = debounce(
             async (
                 document: vscode.TextDocument,
@@ -35,17 +37,35 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
                 prefixContext: string,
                 prefixCode: string,
                 suffixCode: string,
-                suffixContext: string
+                suffixContext: string,
+                controller: AbortController
             ): Promise<string | null> => {
                 try {
+                    // Check if this request has been aborted
+                    if (controller.signal.aborted) {
+                        return null
+                    }
+
                     const messages = formatCompletionMessages(document.fileName, prefixContext+'\n'+prefixCode, suffixCode+'\n'+suffixContext)
                     console.log(`completion content:\n\n ${messages.map(message => message.content).join('\n')}`)
                     const systemPrompt = messages.shift()?.content
                     const apiHandler = buildApiHandler(this.configuration)
+
+                    // Add abort signal check before making the API call
+                    if (controller.signal.aborted) {
+                        return null
+                    }
+
                     const completion = await apiHandler.completeMessage(
                         systemPrompt!,
                         messages
                     )
+
+                    // Check again after the API call
+                    if (controller.signal.aborted) {
+                        return null
+                    }
+
                     console.log(`completion: ${completion}`)
                     
                     let cleanedCompletion = completion
@@ -56,11 +76,13 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
 
                     return cleanedCompletion || null
                 } catch (error) {
-                    console.error('Inline completion error:', error)
+                    if (!controller.signal.aborted) {
+                        console.error('Inline completion error:', error)
+                    }
                     return null
                 }
             },
-            800  // 400ms debounce delay
+            800
         )
     }
 
@@ -106,6 +128,15 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
         context: vscode.InlineCompletionContext,
         token: vscode.CancellationToken
     ): Promise<vscode.InlineCompletionItem[] | null> {
+        // Cancel any existing completion request
+        if (this.currentController) {
+            this.currentController.abort()
+        }
+
+        // Create new controller for this request
+        this.currentController = new AbortController()
+        const controller = this.currentController
+
         // Get the current line text up to the cursor position
         const linePrefix = document.lineAt(position).text.substring(0, position.character)
 
@@ -115,21 +146,26 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
         try {
             const { prefixContext, prefixCode, suffixCode, suffixContext } = this.parseCodeContext(document, position)
             
-            // Use debounced completion function
+            // Use debounced completion function with the controller
             const cleanedCompletion = await this.debouncedComplete(
                 document,
                 position,
                 prefixContext,
                 prefixCode,
                 suffixCode,
-                suffixContext
+                suffixContext,
+                controller
             )
+
+            // Check if this request was aborted or if VSCode cancelled it
+            if (controller.signal.aborted || token.isCancellationRequested) {
+                return null
+            }
 
             if (!cleanedCompletion) { return null }
 
             console.log(`cleanedCompletion: ${cleanedCompletion}`)
 
-            // Create and return completion item
             return [
                 new vscode.InlineCompletionItem(
                     cleanedCompletion,
@@ -137,8 +173,15 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
                 )
             ]
         } catch (error) {
-            console.error('Inline completion error:', error)
+            if (!controller.signal.aborted) {
+                console.error('Inline completion error:', error)
+            }
             return null
+        } finally {
+            // Clear the controller reference if it hasn't been replaced
+            if (this.currentController === controller) {
+                this.currentController = null
+            }
         }
     }
 }
