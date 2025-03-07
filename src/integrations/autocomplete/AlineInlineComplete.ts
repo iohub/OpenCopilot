@@ -67,6 +67,9 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
             return null
         }
 
+        // Calculate the indentation of the current line
+        const currentLineIndent = linePrefix.match(/^(\s*)/)?.[1] || ''
+
         try {
             const { prefixContext, prefixCode, suffixCode, suffixContext } = this.parseCodeContext(document, position)
             const messages = formatCompletionMessages(document.fileName, prefixContext+'\n'+prefixCode, suffixCode+'\n'+suffixContext)
@@ -89,7 +92,8 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
                 return null
             }
 
-            cleanedCompletion = formatCompletionText(suffixCode, cleanedCompletion)
+            // Process the completion to avoid duplication with suffix code
+            cleanedCompletion = processCompletionText(cleanedCompletion, suffixCode, currentLineIndent)
             console.log(`cleanedCompletion: ${cleanedCompletion}`)
 
             // Create and return completion item
@@ -106,40 +110,91 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
     }
 }
 
-function formatCompletionText(suffixCode: string, completionText: string): string {
-    const combinedCode = suffixCode + completionText;
-    const formattedCode = js_beautify(combinedCode, {
-        indent_size: 4,
-        indent_with_tabs: false,
-        brace_style: "collapse",
-    });
-
-    const inputTextEndIndex = findInputTextEndInFormattedCode(suffixCode, formattedCode);
-    if (inputTextEndIndex !== -1) {
-        return formattedCode.slice(inputTextEndIndex);
+/**
+ * Process the completion text to avoid duplication with suffix code
+ * and format it appropriately
+ */
+function processCompletionText(completionText: string, suffixCode: string, currentIndent: string): string {
+    // Trim both texts to normalize them
+    const trimmedCompletion = completionText.trim()
+    const trimmedSuffix = suffixCode.trim()
+    
+    // If suffix is empty, just return the formatted completion
+    if (!trimmedSuffix) {
+        return formatCode(trimmedCompletion, currentIndent)
     }
-    return formattedCode;
+    
+    // Check if completion ends with the beginning of suffix
+    // This helps avoid duplication when the model predicts part of the existing code
+    let finalCompletion = trimmedCompletion
+    
+    // Find the longest common substring at the end of completion and start of suffix
+    const maxOverlapLength = Math.min(trimmedCompletion.length, trimmedSuffix.length)
+    let overlapLength = 0
+    
+    for (let i = 1; i <= maxOverlapLength; i++) {
+        const completionEnd = trimmedCompletion.slice(-i)
+        const suffixStart = trimmedSuffix.slice(0, i)
+        
+        if (completionEnd === suffixStart) {
+            overlapLength = i
+        }
+    }
+    
+    // Remove the overlapping part from the completion
+    if (overlapLength > 0) {
+        finalCompletion = trimmedCompletion.slice(0, -overlapLength)
+    }
+    
+    // Format the final completion
+    return formatCode(finalCompletion, currentIndent)
 }
 
-function findInputTextEndInFormattedCode(suffixCode: string, formattedCode: string): number {
-    const normalizedInputText = suffixCode.replace(/\s+/g, '');
-    const normalizedFormattedCode = formattedCode.replace(/\s+/g, '');
-    const inputTextEndInNormalized = normalizedInputText.length;
-    const normalizedCodePrefix = normalizedFormattedCode.slice(0, inputTextEndInNormalized);
-
-    if (normalizedCodePrefix !== normalizedInputText) {
-        return -1;
-    }
-
-    let formattedCodeIndex = 0;
-    let normalizedCodeIndex = 0;
-
-    while (normalizedCodeIndex < inputTextEndInNormalized && formattedCodeIndex < formattedCode.length) {
-        if (!/\s/.test(formattedCode[formattedCodeIndex])) {
-            normalizedCodeIndex++;
+/**
+ * Format code using js-beautify and preserve indentation
+ */
+function formatCode(code: string, currentIndent: string): string {
+    try {
+        // First format the code with js-beautify
+        const formattedCode = js_beautify(code, {
+            indent_size: 4,
+            indent_with_tabs: false,
+            brace_style: "collapse",
+        });
+        
+        // Then adjust the indentation to match the current line
+        if (!currentIndent) {
+            return formattedCode;
         }
-        formattedCodeIndex++;
+        
+        // For multi-line completions, we need to add the current indentation to each line
+        if (formattedCode.includes('\n')) {
+            const lines = formattedCode.split('\n');
+            
+            // First line doesn't need additional indentation as it continues the current line
+            const firstLine = lines[0];
+            
+            // Subsequent lines need the current indentation plus their own relative indentation
+            const restLines = lines.slice(1).map(line => {
+                // Preserve empty lines
+                if (!line.trim()) {
+                    return '';
+                }
+                
+                // Get the line's own indentation
+                const lineIndent = line.match(/^(\s*)/)?.[1] || '';
+                
+                // Return the line with current indentation plus its own indentation
+                return currentIndent + line;
+            });
+            
+            return [firstLine, ...restLines].join('\n');
+        }
+        
+        // For single-line completions, just return the formatted code
+        return formattedCode;
+    } catch (error) {
+        console.error('Error formatting code:', error)
+        return code
     }
-
-    return formattedCodeIndex;
 }
