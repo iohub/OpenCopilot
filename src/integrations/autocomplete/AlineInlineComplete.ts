@@ -64,7 +64,7 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
 
         // Don't trigger completion if line is empty or only whitespace
         if (!linePrefix.trim()) {
-            return null
+            // return null
         }
 
         // Calculate the indentation of the current line
@@ -93,7 +93,7 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
             }
 
             // Process the completion to avoid duplication with suffix code
-            cleanedCompletion = processCompletionText(cleanedCompletion, suffixCode, currentLineIndent)
+            cleanedCompletion = processCompletionText(cleanedCompletion, suffixCode, currentLineIndent, linePrefix)
             console.log(`cleanedCompletion: ${cleanedCompletion}`)
 
             // Create and return completion item
@@ -114,7 +114,7 @@ export class AlineInlineComplete implements vscode.InlineCompletionItemProvider 
  * Process the completion text to avoid duplication with suffix code
  * and format it appropriately
  */
-function processCompletionText(completionText: string, suffixCode: string, currentIndent: string): string {
+function processCompletionText(completionText: string, suffixCode: string, currentIndent: string, linePrefix: string): string {
     // Trim both texts to normalize them
     const trimmedCompletion = completionText.trim()
     const trimmedSuffix = suffixCode.trim()
@@ -124,16 +124,25 @@ function processCompletionText(completionText: string, suffixCode: string, curre
         return formatCode(trimmedCompletion, currentIndent)
     }
     
-    // Check if completion ends with the beginning of suffix
-    // This helps avoid duplication when the model predicts part of the existing code
+    // Check for keyword duplication (like "if if")
+    const lastWord = linePrefix.trim().split(/\s+/).pop() || ''
     let finalCompletion = trimmedCompletion
     
+    // If the last word in the line prefix is a keyword and the completion starts with the same keyword,
+    // remove the duplicate keyword from the completion
+    if (lastWord && /^(if|for|while|switch|function|class|const|let|var)$/.test(lastWord)) {
+        const completionWords = trimmedCompletion.split(/\s+/)
+        if (completionWords[0] === lastWord) {
+            finalCompletion = trimmedCompletion.replace(new RegExp(`^${lastWord}\\s*`), '')
+        }
+    }
+    
     // Find the longest common substring at the end of completion and start of suffix
-    const maxOverlapLength = Math.min(trimmedCompletion.length, trimmedSuffix.length)
+    const maxOverlapLength = Math.min(finalCompletion.length, trimmedSuffix.length)
     let overlapLength = 0
     
     for (let i = 1; i <= maxOverlapLength; i++) {
-        const completionEnd = trimmedCompletion.slice(-i)
+        const completionEnd = finalCompletion.slice(-i)
         const suffixStart = trimmedSuffix.slice(0, i)
         
         if (completionEnd === suffixStart) {
@@ -143,7 +152,7 @@ function processCompletionText(completionText: string, suffixCode: string, curre
     
     // Remove the overlapping part from the completion
     if (overlapLength > 0) {
-        finalCompletion = trimmedCompletion.slice(0, -overlapLength)
+        finalCompletion = finalCompletion.slice(0, -overlapLength)
     }
     
     // Format the final completion
